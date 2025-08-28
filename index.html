@@ -55,10 +55,10 @@
         <div id="dashboard" class="hidden">
             <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                 <div>
-                    <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Expense Dashboard</h1>
+                    <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white">Expense Dashboard</h1>
                     <p id="user-greeting" class="text-gray-500 mt-1 dark:text-gray-300">Welcome!</p>
                 </div>
-                <div class="flex items-center gap-2 flex-wrap">
+                <div class="flex items-center gap-2 flex-wrap justify-start sm:justify-end w-full sm:w-auto">
                      <input type="month" id="month-selector" class="bg-white p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none dark:bg-gray-900 dark:border-gray-700 dark:text-white">
                      <button id="reports-btn" class="p-2 rounded-lg bg-white dark:bg-gray-900 dark:border dark:border-gray-700 font-semibold">Reports</button>
                      <button id="manage-cards-btn" class="p-2 rounded-lg bg-white dark:bg-gray-900 dark:border dark:border-gray-700 font-semibold">Manage Cards</button>
@@ -67,8 +67,8 @@
                 </div>
             </header>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 space-y-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-6">
                     <div class="bg-white p-6 rounded-2xl shadow-lg dark:bg-gray-900 dark:border dark:border-gray-800">
                         <h3 class="text-xl font-semibold mb-4">Add Expense for <span id="form-month-display" class="font-bold text-indigo-600 dark:text-indigo-400"></span></h3>
                         <form id="expense-form" class="space-y-4">
@@ -103,10 +103,10 @@
                     </div>
                 </div>
 
-                <div class="space-y-8">
+                <div class="space-y-6">
                     <div class="bg-white p-6 rounded-2xl shadow-lg text-center dark:bg-gray-900 dark:border dark:border-gray-800">
                         <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-300">Total Expense for <span id="total-month-display" class="font-bold text-indigo-600 dark:text-indigo-400"></span></h3>
-                        <p id="total-expense" class="text-5xl font-bold text-indigo-600 dark:text-indigo-400 mt-2">₹0.00</p>
+                        <p id="total-expense" class="text-4xl sm:text-5xl font-bold text-indigo-600 dark:text-indigo-400 mt-2">₹0.00</p>
                     </div>
                     
                     <div class="bg-white p-6 rounded-2xl shadow-lg dark:bg-gray-900 dark:border dark:border-gray-800">
@@ -362,7 +362,7 @@
                 noExpensesMsg.classList.add('hidden');
                 filteredExpenses.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(expense => {
                     const item = document.createElement('div');
-                    item.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200 dark:bg-gray-900 dark:border-gray-700';
+                    item.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200 dark:bg-gray-800 dark:border-gray-700';
                     item.innerHTML = `
                         <div>
                             <p class="font-semibold">${expense.category}</p>
