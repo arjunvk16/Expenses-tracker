@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Expense Tracker</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for the pie chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for a better look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #2d3748;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        /* Styles for the modal */
+        .modal-backdrop {
+            transition: opacity 0.3s ease;
+        }
+        /* Dark mode styles */
+        .dark .dark\:bg-gray-800 { background-color: #1a202c; }
+        .dark .dark\:bg-gray-900 { background-color: #171923; }
+        .dark .dark\:text-white { color: #fff; }
+        .dark .dark\:text-gray-300 { color: #d1d5db; }
+        .dark .dark\:border-gray-700 { border-color: #4a5568; }
+        .dark .dark\:bg-gray-700 { background-color: #4a5568; }
+        .dark .dark\:hover\:bg-gray-600:hover { background-color: #718096; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 to-purple-100 min-h-screen text-gray-800 dark:from-gray-800 dark:to-gray-900 dark:text-white">
+
+    <!-- Main Application Container -->
+    <div id="app" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- Authentication Section -->
+        <div id="auth-container" class="max-w-md mx-auto mt-12 bg-white/70 backdrop-blur-lg p-8 rounded-2xl shadow-xl transition-all duration-500 dark:bg-gray-800/70">
+            <h2 id="auth-title" class="text-3xl font-bold text-center text-gray-800 mb-2 dark:text-white">Welcome Back!</h2>
+            <p class="text-center text-gray-500 mb-8 dark:text-gray-300">Log in to manage your expenses.</p>
+            
+            <form id="login-form" class="space-y-6">
+                <input type="email" id="login-email" placeholder="Email" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none transition dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <input type="password" id="login-password" placeholder="Password" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none transition dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform hover:scale-105">Login</button>
+            </form>
+
+            <form id="signup-form" class="hidden space-y-6">
+                <input type="text" id="signup-name" placeholder="Your Name" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-400 focus:outline-none transition dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <input type="email" id="signup-email" placeholder="Email" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-400 focus:outline-none transition dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <input type="password" id="signup-password" placeholder="Password (min. 6 characters)" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-400 focus:outline-none transition dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <button type="submit" class="w-full bg-purple-600 text-white font-semibold py-3 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-transform transform hover:scale-105">Create Account</button>
+            </form>
+
+            <p id="auth-error" class="text-red-500 text-center mt-4 text-sm font-medium"></p>
+            <p class="text-center mt-6 text-sm">
+                <a href="#" id="toggle-auth" class="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">Don't have an account? Sign Up</a>
+            </p>
+        </div>
+
+        <!-- Main Dashboard (hidden by default) -->
+        <div id="dashboard" class="hidden">
+            <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-900 dark:text-white">Expense Dashboard</h1>
+                    <p id="user-greeting" class="text-gray-500 mt-1 dark:text-gray-300">Welcome!</p>
+                </div>
+                <div class="flex items-center gap-2">
+                     <input type="month" id="month-selector" class="bg-white/80 backdrop-blur-lg p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                     <button id="manage-cards-btn" class="p-2 rounded-lg bg-white/80 dark:bg-gray-700 font-semibold">Manage Cards</button>
+                     <button id="dark-mode-toggle" class="p-2 rounded-lg bg-white/80 dark:bg-gray-700">🌙</button>
+                    <button id="logout-btn" class="bg-red-500 text-white font-semibold px-6 py-2 rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-transform transform hover:scale-105">Logout</button>
+                </div>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 space-y-8">
+                    <div class="bg-white/70 backdrop-blur-lg p-6 rounded-2xl shadow-lg dark:bg-gray-800/70">
+                        <h3 class="text-xl font-semibold mb-4">Add Expense for <span id="form-month-display" class="font-bold text-indigo-600 dark:text-indigo-400"></span></h3>
+                        <form id="expense-form" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <select id="expense-category" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none transition dark:bg-gray-700 dark:border-gray-600 dark:text-white"></select>
+                                <input type="number" id="expense-amount" placeholder="Amount (₹)" required min="0" step="0.01" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none transition dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <select id="payment-method" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none transition dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                                    <option value="upi">UPI</option>
+                                    <option value="card">Card</option>
+                                    <option value="cash">Cash</option>
+                                </select>
+                                <select id="credit-card-selector" class="hidden w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none transition dark:bg-gray-700 dark:border-gray-600 dark:text-white"></select>
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-transform transform hover:scale-105 mt-2">Add Expense</button>
+                        </form>
+                    </div>
+
+                    <div class="bg-white/70 backdrop-blur-lg p-6 rounded-2xl shadow-lg dark:bg-gray-800/70">
+                        <h3 class="text-xl font-semibold mb-4">Your Expenses</h3>
+                        <div id="expense-list" class="space-y-3 max-h-96 overflow-y-auto pr-2">
+                            <p id="no-expenses" class="text-gray-500 text-center py-8 dark:text-gray-400">No expenses added for this month.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="bg-white/70 backdrop-blur-lg p-6 rounded-2xl shadow-lg text-center dark:bg-gray-800/70">
+                        <h3 class="text-xl font-semibold text-gray-600 dark:text-gray-300">Total Expense for <span id="total-month-display" class="font-bold text-indigo-600 dark:text-indigo-400"></span></h3>
+                        <p id="total-expense" class="text-5xl font-bold text-indigo-600 dark:text-indigo-400 mt-2">₹0.00</p>
+                    </div>
+                    
+                    <div class="bg-white/70 backdrop-blur-lg p-6 rounded-2xl shadow-lg dark:bg-gray-800/70">
+                        <h3 class="text-xl font-semibold mb-4 text-center">Credit Card Limits</h3>
+                        <div id="credit-card-list" class="space-y-3"></div>
+                    </div>
+
+                    <div class="bg-white/70 backdrop-blur-lg p-6 rounded-2xl shadow-lg dark:bg-gray-800/70">
+                        <h3 class="text-xl font-semibold mb-4 text-center">Expense Breakdown</h3>
+                        <div class="relative h-64 md:h-80">
+                           <canvas id="expense-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Cards Modal -->
+    <div id="manage-cards-modal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-lg dark:bg-gray-800">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold">Manage Credit Cards</h3>
+                <button id="close-manage-cards-modal" class="text-gray-500 hover:text-gray-800 dark:hover:text-white">&times;</button>
+            </div>
+            
+            <!-- Add Card Form -->
+            <form id="add-card-form" class="mb-6 p-4 border rounded-lg dark:border-gray-700">
+                <h4 class="font-semibold mb-2">Add New Card</h4>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <input type="text" id="new-card-name" placeholder="Card Name" required class="md:col-span-2 w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none transition dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                    <input type="number" id="new-card-limit" placeholder="Limit (₹)" required class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:outline-none transition dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                </div>
+                <button type="submit" class="w-full mt-4 bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700">Add Card</button>
+            </form>
+
+            <!-- List of existing cards -->
+            <div id="managed-card-list" class="space-y-2 max-h-64 overflow-y-auto"></div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, updateProfile } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJ9K9fQ0ThMB7aXB6qNHr3_yLUdqJgnCM",
+            authDomain: "my-chain-reaction-game.firebaseapp.com",
+            projectId: "my-chain-reaction-game",
+            storageBucket: "my-chain-reaction-game.appspot.com",
+            messagingSenderId: "32751418407",
+            appId: "1:32751418407:web:ff8244007ef2b099d56202",
+            measurementId: "G-D6ZRG8LK2H"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        setPersistence(auth, browserLocalPersistence);
+
+        // DOM Elements
+        const authContainer = document.getElementById('auth-container');
+        const dashboard = document.getElementById('dashboard');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const toggleAuthLink = document.getElementById('toggle-auth');
+        const authTitle = document.getElementById('auth-title');
+        const authError = document.getElementById('auth-error');
+        const logoutBtn = document.getElementById('logout-btn');
+        const userGreetingDisplay = document.getElementById('user-greeting');
+        const expenseForm = document.getElementById('expense-form');
+        const expenseCategory = document.getElementById('expense-category');
+        const expenseAmountInput = document.getElementById('expense-amount');
+        const expenseList = document.getElementById('expense-list');
+        const totalExpenseDisplay = document.getElementById('total-expense');
+        const noExpensesMsg = document.getElementById('no-expenses');
+        const monthSelector = document.getElementById('month-selector');
+        const formMonthDisplay = document.getElementById('form-month-display');
+        const totalMonthDisplay = document.getElementById('total-month-display');
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const paymentMethod = document.getElementById('payment-method');
+        const creditCardSelector = document.getElementById('credit-card-selector');
+        const creditCardList = document.getElementById('credit-card-list');
+        const manageCardsBtn = document.getElementById('manage-cards-btn');
+        const manageCardsModal = document.getElementById('manage-cards-modal');
+        const closeManageCardsModal = document.getElementById('close-manage-cards-modal');
+        const addCardForm = document.getElementById('add-card-form');
+        const managedCardList = document.getElementById('managed-card-list');
+
+        let expenseChart = null;
+        let unsubscribeFromExpenses = null;
+        let unsubscribeFromCards = null;
+        let selectedMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+
+        const initialCategories = ['Petrol', 'Food', 'Cloth', 'Rent', 'Chitty', 'Emi tv', 'Emi Washing machene', 'Post office', 'SIP'];
+        const initialCards = [
+            { name: 'Amazon ICICI', limit: 100000, used: 0 },
+            { name: 'Coral ICICI', limit: 100000, used: 0 },
+            { name: 'Flipkart Axis', limit: 100000, used: 0 },
+            { name: 'IOCL Axis', limit: 100000, used: 0 },
+            { name: 'HDFC Shopee', limit: 100000, used: 0 },
+            { name: 'Indusind Legend', limit: 100000, used: 0 }
+        ];
+
+        // --- DARK MODE ---
+        darkModeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            darkModeToggle.textContent = document.documentElement.classList.contains('dark') ? '☀️' : '🌙';
+        });
+
+        // --- AUTHENTICATION ---
+        toggleAuthLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.classList.toggle('hidden');
+            signupForm.classList.toggle('hidden');
+            authError.textContent = '';
+            authTitle.textContent = signupForm.classList.contains('hidden') ? 'Welcome Back!' : 'Create Your Account';
+            toggleAuthLink.textContent = signupForm.classList.contains('hidden') ? "Don't have an account? Sign Up" : 'Already have an account? Login';
+        });
+
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value.trim();
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            authError.textContent = '';
+            if (!name) {
+                authError.textContent = 'Please enter your name.';
+                return;
+            }
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                await updateProfile(user, { displayName: name });
+                await addDefaultDataForNewUser(user.uid, name, email);
+            } catch (error) {
+                authError.textContent = error.message;
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            authError.textContent = '';
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                authError.textContent = "Invalid email or password.";
+            }
+        });
+
+        logoutBtn.addEventListener('click', () => signOut(auth));
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                authContainer.classList.add('hidden');
+                dashboard.classList.remove('hidden');
+                userGreetingDisplay.textContent = `Welcome, ${user.displayName || user.email}!`;
+                
+                monthSelector.value = selectedMonth;
+                updateMonthDisplays();
+                setupUser(user);
+            } else {
+                authContainer.classList.remove('hidden');
+                dashboard.classList.add('hidden');
+                if (unsubscribeFromExpenses) unsubscribeFromExpenses();
+                if (unsubscribeFromCards) unsubscribeFromCards();
+            }
+        });
+
+        // --- USER SETUP ---
+        async function addDefaultDataForNewUser(userId, name, email) {
+            const userDocRef = doc(db, 'users', userId);
+            await setDoc(userDocRef, { name, email, categories: initialCategories });
+            const cardsColRef = collection(db, 'users', userId, 'cards');
+            for (const card of initialCards) {
+                await addDoc(cardsColRef, card);
+            }
+        }
+
+        async function setupUser(user) {
+            const userDocRef = doc(db, 'users', user.uid);
+            let userDoc = await getDoc(userDocRef);
+
+            if (!userDoc.exists()) {
+                console.log("User document not found, creating one...");
+                await addDefaultDataForNewUser(user.uid, user.displayName, user.email);
+                userDoc = await getDoc(userDocRef);
+            }
+
+            const userData = userDoc.data();
+            populateCategories(userData.categories || initialCategories);
+            setupCardListener(user.uid);
+            listenForExpenses(user.uid, selectedMonth);
+        }
+
+
+        // --- DATA LISTENERS ---
+        function listenForExpenses(userId, monthYear) {
+            if (unsubscribeFromExpenses) unsubscribeFromExpenses();
+            const expensesColRef = collection(db, 'users', userId, 'expenses');
+            const q = query(expensesColRef, where("monthYear", "==", monthYear));
+            unsubscribeFromExpenses = onSnapshot(q, (snapshot) => {
+                const expenses = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderExpenseList(expenses);
+                updateUI(expenses);
+            });
+        }
+
+        function setupCardListener(userId) {
+            if (unsubscribeFromCards) unsubscribeFromCards();
+            const cardsColRef = collection(db, 'users', userId, 'cards');
+            unsubscribeFromCards = onSnapshot(cardsColRef, (snapshot) => {
+                const cards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderCreditCards(cards);
+                renderManagedCardList(cards);
+            });
+        }
+
+        // --- UI RENDERING ---
+        function populateCategories(categories) {
+            expenseCategory.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('') + '<option value="add_new">Add New Category...</option>';
+        }
+
+        function renderCreditCards(cards) {
+            creditCardSelector.innerHTML = cards.map(card => `<option value="${card.id}">${card.name}</option>`).join('');
+            creditCardList.innerHTML = cards.map(card => {
+                const available = card.limit - card.used;
+                const percentage = (card.limit > 0) ? (card.used / card.limit) * 100 : 0;
+                return `
+                <div class="text-sm">
+                    <div class="flex justify-between font-semibold">
+                        <span>${card.name}</span>
+                        <span>₹${available.toLocaleString()} / ₹${card.limit.toLocaleString()}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 mt-1">
+                        <div class="bg-indigo-600 h-2.5 rounded-full" style="width: ${percentage}%"></div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderManagedCardList(cards) {
+            managedCardList.innerHTML = cards.map(card => `
+                <div class="flex justify-between items-center p-2 border-b dark:border-gray-700">
+                    <div>
+                        <p class="font-semibold">${card.name}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Limit: ₹${card.limit.toLocaleString()}</p>
+                    </div>
+                    <div>
+                        <button class="edit-card-btn text-indigo-600 hover:text-indigo-800 p-1" data-id="${card.id}" data-name="${card.name}" data-limit="${card.limit}">Edit</button>
+                        <button class="delete-card-btn text-red-600 hover:text-red-800 p-1" data-id="${card.id}">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderExpenseList(expenses) {
+            expenseList.innerHTML = '';
+            if (expenses.length === 0) {
+                noExpensesMsg.classList.remove('hidden');
+            } else {
+                noExpensesMsg.classList.add('hidden');
+                expenses.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(expense => {
+                    const item = document.createElement('div');
+                    item.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-200 dark:bg-gray-700 dark:border-gray-600';
+                    item.innerHTML = `
+                        <div>
+                            <p class="font-semibold">${expense.category}</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">${expense.paymentMethod} - ${new Date(expense.date).toLocaleDateString()}</p>
+                        </div>
+                        <p class="font-semibold">₹${expense.amount.toLocaleString()}</p>
+                    `;
+                    expenseList.appendChild(item);
+                });
+            }
+        }
+
+        function updateUI(expenses) {
+            const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+            totalExpenseDisplay.textContent = `₹${total.toLocaleString()}`;
+            updateChart(expenses);
+        }
+
+        function updateChart(expenses) {
+            const ctx = document.getElementById('expense-chart').getContext('2d');
+            if (expenseChart) expenseChart.destroy();
+            
+            const categoryTotals = expenses.reduce((acc, exp) => {
+                acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
+                return acc;
+            }, {});
+
+            const labels = Object.keys(categoryTotals);
+            const data = Object.values(categoryTotals);
+
+            expenseChart = new Chart(ctx, {
+                type: 'pie',
+                data: { labels, datasets: [{ data, backgroundColor: generateColors(labels.length), borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        const generateColors = (num) => Array.from({length: num}, (_, i) => `hsl(${(360/num)*i}, 70%, 60%)`);
+
+        // --- EVENT LISTENERS ---
+        monthSelector.addEventListener('change', () => {
+            selectedMonth = monthSelector.value;
+            const user = auth.currentUser;
+            if (user) {
+                updateMonthDisplays();
+                listenForExpenses(user.uid, selectedMonth);
+            }
+        });
+
+        function updateMonthDisplays() {
+            const date = new Date(`${selectedMonth}-02`);
+            const displayFormat = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(date);
+            formMonthDisplay.textContent = displayFormat;
+            totalMonthDisplay.textContent = displayFormat;
+        }
+
+        expenseCategory.addEventListener('change', async () => {
+            if (expenseCategory.value === 'add_new') {
+                const newCategory = prompt('Enter new category name:');
+                if (newCategory && newCategory.trim() !== '') {
+                    const user = auth.currentUser;
+                    const userDocRef = doc(db, 'users', user.uid);
+                    const userDoc = await getDoc(userDocRef);
+                    const existingCategories = userDoc.data().categories || [];
+                    if (!existingCategories.includes(newCategory)) {
+                        const updatedCategories = [...existingCategories, newCategory];
+                        await updateDoc(userDocRef, { categories: updatedCategories });
+                        populateCategories(updatedCategories);
+                        expenseCategory.value = newCategory;
+                    } else {
+                        alert("Category already exists.");
+                        expenseCategory.selectedIndex = 0;
+                    }
+                } else {
+                    expenseCategory.selectedIndex = 0;
+                }
+            }
+        });
+        
+        paymentMethod.addEventListener('change', () => {
+            creditCardSelector.classList.toggle('hidden', paymentMethod.value !== 'card');
+        });
+
+        expenseForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            const amount = parseFloat(expenseAmountInput.value);
+            if (!user || !amount) return;
+
+            const expense = {
+                category: expenseCategory.value,
+                amount,
+                paymentMethod: paymentMethod.value,
+                date: new Date().toISOString(),
+                monthYear: selectedMonth
+            };
+
+            if (paymentMethod.value === 'card') {
+                const cardId = creditCardSelector.value;
+                if (!cardId) {
+                    alert("Please select a credit card.");
+                    return;
+                }
+                expense.cardId = cardId;
+                const cardRef = doc(db, 'users', user.uid, 'cards', cardId);
+                const cardDoc = await getDoc(cardRef);
+                const currentUsed = cardDoc.data().used || 0;
+                await updateDoc(cardRef, { used: currentUsed + amount });
+            }
+
+            await addDoc(collection(db, 'users', user.uid, 'expenses'), expense);
+            expenseForm.reset();
+            creditCardSelector.classList.add('hidden');
+        });
+
+        // --- CARD MANAGEMENT MODAL ---
+        manageCardsBtn.addEventListener('click', () => manageCardsModal.classList.remove('hidden'));
+        closeManageCardsModal.addEventListener('click', () => manageCardsModal.classList.add('hidden'));
+
+        addCardForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            const name = document.getElementById('new-card-name').value.trim();
+            const limit = parseFloat(document.getElementById('new-card-limit').value);
+
+            if (user && name && !isNaN(limit)) {
+                const cardsColRef = collection(db, 'users', user.uid, 'cards');
+                await addDoc(cardsColRef, { name, limit, used: 0 });
+                addCardForm.reset();
+            }
+        });
+
+        managedCardList.addEventListener('click', async (e) => {
+            const user = auth.currentUser;
+            if (!user) return;
+            const target = e.target;
+
+            if (target.classList.contains('delete-card-btn')) {
+                const cardId = target.dataset.id;
+                if (confirm('Are you sure you want to delete this card?')) {
+                    await deleteDoc(doc(db, 'users', user.uid, 'cards', cardId));
+                }
+            }
+
+            if (target.classList.contains('edit-card-btn')) {
+                const { id, name, limit } = target.dataset;
+                const newName = prompt('Enter new card name:', name);
+                const newLimit = prompt('Enter new card limit:', limit);
+
+                if (newName && newLimit && !isNaN(newLimit)) {
+                    await updateDoc(doc(db, 'users', user.uid, 'cards', id), {
+                        name: newName,
+                        limit: parseFloat(newLimit)
+                    });
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
