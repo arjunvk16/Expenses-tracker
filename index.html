@@ -6,156 +6,176 @@
     <title>Payment Manager Pro</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js for graphs - UPDATED to a stable, versioned CDN to fix loading error -->
+    <!-- Chart.js for graphs -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Lucide Icons (Removed - no longer needed as icons are inline) -->
-
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #111827; /* gray-900 */
+            color: #e5e7eb; /* gray-200 */
         }
         /* Simple tab highlighting */
         .tab-btn.active {
-            border-bottom-color: #4f46e5; /* indigo-600 */
-            color: #4f46e5;
+            border-bottom-color: #3b82f6; /* blue-500 */
+            color: #3b82f6;
             font-weight: 600;
         }
-        .tab-btn {
-            border-bottom-width: 2px;
-            border-bottom-color: transparent;
+        /* Custom scrollbar for dark mode */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1f2937; /* gray-800 */
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #4b5563; /* gray-600 */
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280; /* gray-500 */
+        }
+        /* Dark mode for input[type=date] */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
         }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen antialiased">
+<body class="bg-gray-900 text-gray-200">
 
-    <!-- Global Container -->
+    <!-- Toast Notification -->
+    <div id="toast" class="hidden fixed top-5 right-5 z-50 p-4 rounded-lg shadow-lg max-w-sm text-white">
+        <!-- Message will be injected here -->
+    </div>
+
     <div class="container mx-auto p-4 md:p-8 max-w-7xl">
 
         <!-- Header -->
-        <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
-            <h1 class="text-3xl font-bold text-indigo-600">Payment Manager Pro</h1>
+        <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-700">
+            <h1 class="text-3xl font-bold text-blue-400">Payment Manager Pro</h1>
             <div id="auth-container" class="flex items-center space-x-2">
-                <span id="user-email" class="text-gray-600 text-sm hidden"></span>
-                <button id="logout-btn" class="hidden bg-red-500 text-white px-4 py-2 rounded-lg shadow-sm hover:bg-red-600 transition duration-150">
-                    Logout
-                </button>
+                <span id="user-email" class="text-gray-400 text-sm hidden"></span>
+                <button id="logout-btn" class="hidden bg-red-600 text-white px-3 py-1 rounded-lg text-sm shadow-md hover:bg-red-700 transition duration-150">Logout</button>
             </div>
         </header>
 
-        <!-- Auth Section (Login/Signup) -->
-        <section id="auth-section" class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-lg">
-            <h2 class="text-2xl font-semibold text-center text-gray-800 mb-6">Welcome</h2>
+        <!-- Auth Section -->
+        <section id="auth-section" class="max-w-md mx-auto bg-gray-800 p-8 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold text-center text-gray-100 mb-6">Welcome</h2>
             <div class="space-y-4">
-                <input type="email" id="email-input" placeholder="Email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                <input type="password" id="password-input" placeholder="Password (min. 6 characters)" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <input type="email" id="email-input" placeholder="Email" class="w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400">
+                <input type="password" id="password-input" placeholder="Password (min. 6 characters)" class="w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400">
                 <div class="flex space-x-4">
-                    <button id="login-btn" class="flex-1 bg-indigo-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-indigo-700 transition duration-150">Login</button>
+                    <button id="login-btn" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-150">Login</button>
                     <button id="signup-btn" class="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-gray-700 transition duration-150">Sign Up</button>
                 </div>
-                <p id="auth-error" class="text-red-500 text-sm text-center"></p>
+                <p id="auth-error" class="text-red-400 text-sm text-center"></p>
+                <p id="auth-loading" class="text-blue-400 text-sm text-center hidden">Connecting...</p>
+                <p id="config-error" class="text-yellow-400 text-sm text-center hidden"></p>
             </div>
         </section>
 
-        <!-- Main App Content (Hidden until logged in) -->
-        <main id="app-content" class="hidden">
-
+        <!-- Main App Section (hidden by default) -->
+        <main id="app-section" class="hidden">
             <!-- Tab Navigation -->
-            <nav class="mb-6 bg-white rounded-lg shadow-sm">
-                <div class="flex border-b border-gray-200">
-                    <button data-tab="dashboard" class="tab-btn active px-6 py-3 text-gray-600 hover:text-indigo-600">Dashboard</button>
-                    <button data-tab="payments" class="tab-btn px-6 py-3 text-gray-600 hover:text-indigo-600">Payments</button>
-                    <button data-tab="people" class="tab-btn px-6 py-3 text-gray-600 hover:text-indigo-600">Manage People</button>
+            <nav class="mb-6 bg-gray-800 rounded-lg shadow-sm">
+                <div class="flex border-b border-gray-700">
+                    <button data-tab="dashboard" class="tab-btn active px-6 py-3 text-gray-400 hover:text-blue-400">Dashboard</button>
+                    <button data-tab="payments" class="tab-btn px-6 py-3 text-gray-400 hover:text-blue-400">Payments</button>
+                    <button data-tab="people" class="tab-btn px-6 py-3 text-gray-400 hover:text-blue-400">Manage People</button>
                 </div>
             </nav>
 
             <!-- Tab Content -->
             <div>
                 <!-- Dashboard Tab -->
-                <div id="tab-dashboard" class="tab-content grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800">Spending by Person</h3>
+                <section id="dashboard-tab" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Total Spending -->
+                     <div class="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-1">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-100">Total Spending</h3>
+                        <p class="text-4xl font-bold text-blue-400" id="total-spending">...</p>
+                    </div>
+                    
+                    <!-- Spending by Person -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-2">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-100">Spending by Person</h3>
                         <canvas id="persons-chart"></canvas>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800">Monthly Report</h3>
-                        <select id="monthly-report-year" class="mb-4 w-full md:w-auto px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+
+                    <!-- Monthly Report -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-3">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-100">Monthly Report</h3>
+                        <select id="monthly-report-year" class="mb-4 w-full md:w-auto px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
                             <!-- Years will be populated by JS -->
                         </select>
-                        <canvas id="monthly-chart"></canvas>
+                        <canvas id="monthly-chart" style="max-height: 400px;"></canvas>
                     </div>
-                     <div class="bg-white p-6 rounded-lg shadow-lg lg:col-span-2">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800">Total Spending</h3>
-                        <p class="text-4xl font-bold text-indigo-600" id="total-spending">...</p>
-                    </div>
-                </div>
+                </section>
 
                 <!-- Payments Tab -->
-                <div id="tab-payments" class="tab-content hidden space-y-6">
+                <section id="payments-tab" class="tab-content hidden space-y-6">
                     <!-- Add/Edit Payment Form -->
-                    <form id="payment-form" class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 id="form-title" class="text-xl font-semibold mb-4 text-gray-800">Add New Payment</h3>
+                    <form id="payment-form" class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h3 id="form-title" class="text-xl font-semibold mb-4 text-gray-100">Add New Payment</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
-                                <label for="payment-date" class="block text-sm font-medium text-gray-700">Date</label>
-                                <input type="date" id="payment-date" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <label for="payment-date" class="block text-sm font-medium text-gray-300">Date</label>
+                                <input type="date" id="payment-date" required class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400">
                             </div>
                             <div>
-                                <label for="payment-name" class="block text-sm font-medium text-gray-700">Name</label>
-                                <select id="payment-name" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <label for="payment-name" class="block text-sm font-medium text-gray-300">Name</label>
+                                <select id="payment-name" required class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
                                     <option value="">Select a person</option>
                                     <!-- Names populated by JS -->
                                 </select>
                             </div>
                             <div>
-                                <label for="payment-amount" class="block text-sm font-medium text-gray-700">Amount ($)</label>
-                                <input type="number" id="payment-amount" step="0.01" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0.00">
+                                <label for="payment-amount" class="block text-sm font-medium text-gray-300">Amount (₹)</label>
+                                <input type="number" id="payment-amount" step="0.01" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400" placeholder="0.00">
                             </div>
                         </div>
                         <div class="mt-6 flex space-x-4">
-                            <button type="submit" id="submit-payment-btn" class="bg-indigo-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-indigo-700 transition duration-150">Add Payment</button>
+                            <button type="submit" id="submit-payment-btn" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-150">Add Payment</button>
                             <button type="button" id="cancel-edit-btn" class="hidden bg-gray-500 text-white px-6 py-2 rounded-lg shadow-md hover:bg-gray-600 transition duration-150">Cancel Edit</button>
                         </div>
                         <input type="hidden" id="payment-id-hidden">
                     </form>
 
-                    <!-- Payments List -->
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800">All Payments</h3>
+                    <!-- All Payments Table -->
+                    <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                        <h3 class="text-xl font-semibold text-gray-100 p-6">All Payments</h3>
                         <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                            <table class="min-w-full divide-y divide-gray-700">
+                                <thead class="bg-gray-700">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Amount</th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="payments-table-body" class="bg-white divide-y divide-gray-200">
+                                <tbody id="payments-table-body" class="bg-gray-800 divide-y divide-gray-700">
                                     <!-- Rows populated by JS -->
-                                    <tr>
-                                        <td colspan="4" class="px-6 py-4 text-center text-gray-500" id="no-payments-msg">No payments found.</td>
-                                    </tr>
                                 </tbody>
                             </table>
                         </div>
+                        <p id="no-payments-msg" class="p-6 text-center text-gray-400 hidden">No payments recorded yet.</p>
                     </div>
-                </div>
+                </section>
 
                 <!-- Manage People Tab -->
-                <div id="tab-people" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Add Person Form -->
-                    <form id="person-form" class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 id="person-form-title" class="text-xl font-semibold mb-4 text-gray-800">Add New Person</h3>
+                <section id="people-tab" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Add/Edit Person Form -->
+                    <form id="person-form" class="bg-gray-800 p-6 rounded-lg shadow-lg h-fit">
+                        <h3 id="person-form-title" class="text-xl font-semibold mb-4 text-gray-100">Add New Person</h3>
                         <div class="flex space-x-4">
-                            <input type="text" id="person-name" placeholder="Enter new name" required class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input type="text" id="person-name" placeholder="Enter new name" required class="flex-1 px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400">
                             <button type="submit" id="submit-person-btn" class="bg-green-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-green-700 transition duration-150">Add</button>
                         </div>
-                        <div class="mt-4">
+                         <div class="mt-4">
                              <button type="button" id="cancel-person-edit-btn" class="hidden w-full bg-gray-500 text-white px-6 py-2 rounded-lg shadow-md hover:bg-gray-600 transition duration-150">Cancel Edit</button>
                         </div>
                         <input type="hidden" id="person-id-hidden">
@@ -163,63 +183,24 @@
                     </form>
 
                     <!-- People List -->
-                    <div class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800">Saved People</h3>
-                        <ul id="people-list" class="space-y-3 max-h-60 overflow-y-auto">
-                            <!-- People populated by JS -->
-                            <li id="no-people-msg" class="text-gray-500">No people saved yet.</li>
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-100">People List</h3>
+                        <ul id="people-list" class="space-y-3">
+                            <!-- List populated by JS -->
                         </ul>
+                        <p id="no-people-msg" class="text-center text-gray-400 hidden">No people added yet.</p>
                     </div>
-                </div>
+                </section>
             </div>
-
         </main>
-        
-        <!-- Global Message/Toast -->
-        <div id="toast-message" class="hidden fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-xl transition-all duration-300 ease-out">
-            <span id="toast-text"></span>
-        </div>
+    </div>
 
-    </div> <!-- End Global Container -->
-
-
-    <!-- Firebase SDKs -->
     <script type="module">
-        // Firebase 11 imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { 
-            getAuth, 
-            onAuthStateChanged, 
-            createUserWithEmailAndPassword, 
-            signInWithEmailAndPassword, 
-            signOut,
-            signInAnonymously,
-            signInWithCustomToken
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            doc, 
-            collection, 
-            addDoc, 
-            getDocs, 
-            onSnapshot, 
-            updateDoc, 
-            deleteDoc, 
-            query, 
-            where, 
-            setDoc, 
-            serverTimestamp,
-            writeBatch,
-            setLogLevel
-        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, collection, addDoc, getDocs, onSnapshot, updateDoc, deleteDoc, query, where, setDoc, serverTimestamp, writeBatch, setLogLevel, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- MANDATORY GLOBAL VARS ---
-        // These are provided by the environment. DO NOT change them.
-        
-        // --- MODIFICATION ---
-        // The __firebase_config from the environment is being IGNORED per your request.
-        // We are now hard-coding your config for 'my-chain-reaction-game'.
-        // This will allow you to log in, but breaks the intended environment integration.
+        // --- Firebase Config (Hard-coded as requested) ---
         const firebaseConfig = {
             apiKey: "AIzaSyAJ9K9fQ0ThMB7aXB6qNHr3_yLUdqJgnCM",
             authDomain: "my-chain-reaction-game.firebaseapp.com",
@@ -228,11 +209,16 @@
             messagingSenderId: "32751418407",
             appId: "1:32751418407:web:ff8244007ef2b099d56202"
         };
-        // const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
         
-        // The appId is now irrelevant as we are not using the environment's project.
-        // Using a default value.
-        // const appId = typeof __app_id !== 'undefined' ? __app_id : 'my-chain-reaction-game';
+        // --- App & Firebase Globals ---
+        let app, auth, db;
+        let userId = null;
+        let unsubscribePayments = null;
+        let unsubscribePeople = null;
+        let paymentsCache = [];
+        let peopleCache = [];
+        let personsChartInstance = null;
+        let monthlyChartInstance = null;
         
         // --- CRITICAL FIX ---
         // We MUST hard-code the appId to match the hard-coded firebaseConfig.
@@ -241,45 +227,37 @@
         const appId = 'my-chain-reaction-game';
         // --- END FIX ---
         
-        // The initialAuthToken is also irrelevant as it's for the environment's project.
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        // --- END MODIFICATION ---
-
-        // Firebase App Initialization
-        let app, auth, db;
-        let userId = null;
-        let personsUnsubscribe = null;
-        let paymentsUnsubscribe = null;
-
-        let peopleCache = []; // Local cache for people
-        let paymentsCache = []; // Local cache for payments
-
-        // Chart instances
-        let personsChartInstance = null;
-        let monthlyChartInstance = null;
-
-        // DOM Elements
+        // --- UI Element Globals ---
+        // Auth
         const authSection = document.getElementById('auth-section');
-        const appContent = document.getElementById('app-content');
+        const appSection = document.getElementById('app-section');
+        const emailInput = document.getElementById('email-input');
+        const passwordInput = document.getElementById('password-input');
         const loginBtn = document.getElementById('login-btn');
         const signupBtn = document.getElementById('signup-btn');
         const logoutBtn = document.getElementById('logout-btn');
-        const emailInput = document.getElementById('email-input');
-        const passwordInput = document.getElementById('password-input');
+        const userEmailSpan = document.getElementById('user-email');
         const authError = document.getElementById('auth-error');
-        const userEmail = document.getElementById('user-email');
+        const authLoading = document.getElementById('auth-loading');
+        const configError = document.getElementById('config-error');
 
+        // Tabs
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // Payments
         const paymentForm = document.getElementById('payment-form');
+        const formTitle = document.getElementById('form-title');
         const paymentDate = document.getElementById('payment-date');
         const paymentNameSelect = document.getElementById('payment-name');
         const paymentAmount = document.getElementById('payment-amount');
-        const paymentIdHidden = document.getElementById('payment-id-hidden');
-        const formTitle = document.getElementById('form-title');
         const submitPaymentBtn = document.getElementById('submit-payment-btn');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
+        const paymentIdHidden = document.getElementById('payment-id-hidden');
         const paymentsTableBody = document.getElementById('payments-table-body');
         const noPaymentsMsg = document.getElementById('no-payments-msg');
-
+        
+        // People
         const personForm = document.getElementById('person-form');
         const personNameInput = document.getElementById('person-name');
         const peopleList = document.getElementById('people-list');
@@ -289,127 +267,145 @@
         const cancelPersonEditBtn = document.getElementById('cancel-person-edit-btn');
         const personIdHidden = document.getElementById('person-id-hidden');
         const personOldNameHidden = document.getElementById('person-old-name-hidden');
-
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-
-        const personsChartCanvas = document.getElementById('persons-chart');
-        const monthlyChartCanvas = document.getElementById('monthly-chart');
-        const monthlyReportYearSelect = document.getElementById('monthly-report-year');
+        
+        // Dashboard
         const totalSpendingEl = document.getElementById('total-spending');
+        const monthlyReportYearSelect = document.getElementById('monthly-report-year');
         
-        const toast = document.getElementById('toast-message');
-        const toastText = document.getElementById('toast-text');
+        // --- Chart Config ---
+        // Predefined colors for the person chart
+        const CHART_COLORS = [
+            '#3b82f6', // blue-500
+            '#10b981', // emerald-500
+            '#ef4444', // red-500
+            '#f97316', // orange-500
+            '#a855f7', // purple-500
+            '#eab308', // yellow-500
+            '#ec4899', // pink-500
+            '#6366f1', // indigo-500
+            '#06b6d4', // cyan-500
+            '#f43f5e', // rose-500
+        ];
+        
+        // Set Chart.js defaults for dark mode
+        Chart.defaults.color = '#e5e7eb'; // gray-200
+        Chart.defaults.borderColor = '#4b5563'; // gray-600
 
-        // --- Utility Functions ---
-        
         /**
-         * Shows a toast message.
-         * @param {string} message - The text to display.
-         * @param {boolean} [isError=false] - If true, shows a red error toast.
+         * Utility: Show toast message
+         * @param {string} message - The message to display.
+         * @param {boolean} [isError=false] - If true, show error colors.
          */
         function showToast(message, isError = false) {
-            toastText.textContent = message;
-            toast.classList.remove('hidden', 'bg-green-500', 'bg-red-500');
-            
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.remove('hidden');
             if (isError) {
-                toast.classList.add('bg-red-500');
+                toast.classList.add('bg-red-600');
+                toast.classList.remove('bg-green-600');
             } else {
-                toast.classList.add('bg-green-500');
+                toast.classList.add('bg-green-600');
+                toast.classList.remove('bg-red-600');
             }
-            
             setTimeout(() => {
                 toast.classList.add('hidden');
             }, 3000);
         }
 
         /**
-         * Formats a number as currency.
+         * Utility: Format number as INR currency
          * @param {number} amount - The number to format.
-         * @returns {string} - Formatted currency string (e.g., $1,234.50).
+         * @returns {string} - Formatted currency string (e.g., ₹1,234.50).
          */
         function formatCurrency(amount) {
-            return new Intl.NumberFormat('en-US', {
+            return new Intl.NumberFormat('en-IN', {
                 style: 'currency',
-                currency: 'USD',
+                currency: 'INR',
             }).format(amount);
         }
 
         // --- Firebase Initialization & Auth ---
-        
-        /**
-         * Initializes Firebase and sets up authentication.
-         */
-        async function initializeFirebase() {
-            try {
-                // --- ADDED GUARD CLAUSE ---
-                // Check if the mandatory config is missing or empty.
-                if (Object.keys(firebaseConfig).length === 0) {
-                    console.error("Fatal Error: Firebase config is missing or empty.");
-                    authError.textContent = "Fatal Error: App configuration is missing. Cannot load.";
-                    authError.classList.remove('hidden'); // Ensure the error is visible
-                    return; // Stop all further execution
-                }
-                // --- END GUARD CLAUSE ---
 
+        /**
+         * Initializes the Firebase app and auth.
+         */
+        function initializeFirebase() {
+            try {
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-                setLogLevel('debug'); // Added for better debugging
-
-                // Set up auth state listener
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        // User is signed in
-                        userId = user.uid;
-                        userEmail.textContent = user.email || 'Logged In';
-                        userEmail.classList.remove('hidden');
-                        logoutBtn.classList.remove('hidden');
-                        authSection.classList.add('hidden');
-                        appContent.classList.remove('hidden');
-
-                        // Attach Firestore listeners for this user
-                        attachFirestoreListeners(userId);
-                        // Set default date for payment form
-                        paymentDate.valueAsDate = new Date();
-                        
-                    } else {
-                        // User is signed out
-                        userId = null;
-                        userEmail.classList.add('hidden');
-                        logoutBtn.classList.add('hidden');
-                        authSection.classList.remove('hidden');
-                        appContent.classList.add('hidden');
-
-                        // Detach listeners
-                        detachFirestoreListeners();
-                        // Clear UI
-                        clearUI();
-                    }
-                });
-
-                // Sign in the user
-                if (initialAuthToken) {
-                    // This will likely fail now as the token is for a different project,
-                    // but we will fall back to manual login.
-                    try {
-                        await signInWithCustomToken(auth, initialAuthToken);
-                    } catch (tokenError) {
-                        console.warn("Initial token sign-in failed (expected, as projects differ). Please log in manually.");
-                        if (auth.currentUser === null) {
-                             console.log("No initial token. User must log in or sign up.");
-                        }
-                    }
-                } else if (auth.currentUser === null) {
-                    // Fallback for environments without a custom token (e.g., local testing)
-                    // In a real-world scenario, you'd only show login/signup.
-                    // For this app, we'll keep the auth wall up.
-                    console.log("No initial token. User must log in or sign up.");
-                }
-
+                setLogLevel('Debug'); // Enable Firestore logging
+                console.log("Firebase initialized successfully.");
+                setupAuthListener();
             } catch (error) {
-                console.error("Error initializing Firebase:", error);
-                authError.textContent = "Failed to initialize app. Please refresh.";
+                console.error("Failed to initialize Firebase:", error);
+                configError.textContent = "Error: Failed to initialize app. Please check console.";
+                configError.classList.remove('hidden');
+                authLoading.classList.add('hidden');
+            }
+        }
+
+        /**
+         * Sets up the listener for auth state changes.
+         */
+        function setupAuthListener() {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    // User is signed in
+                    console.log("User is signed in:", user.uid);
+                    userId = user.uid;
+                    userEmailSpan.textContent = user.email;
+                    userEmailSpan.classList.remove('hidden');
+                    logoutBtn.classList.remove('hidden');
+                    authSection.classList.add('hidden');
+                    appSection.classList.remove('hidden');
+                    
+                    // Set default date for payment form
+                    paymentDate.value = new Date().toISOString().split('T')[0];
+                    
+                    // Attach Firestore listeners
+                    attachFirestoreListeners();
+                    
+                } else {
+                    // User is signed out
+                    console.log("User is signed out.");
+                    userId = null;
+                    userEmailSpan.textContent = '';
+                    userEmailSpan.classList.add('hidden');
+                    logoutBtn.classList.add('hidden');
+                    authSection.classList.remove('hidden');
+                    appSection.classList.add('hidden');
+                    
+                    // Detach listeners if they exist
+                    if (unsubscribePayments) unsubscribePayments();
+                    if (unsubscribePeople) unsubscribePeople();
+                    
+                    // Clear local caches
+                    paymentsCache = [];
+                    peopleCache = [];
+                }
+                authLoading.classList.add('hidden');
+            });
+        }
+
+        /**
+         * Handles user login.
+         */
+        async function handleLogin() {
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            if (!email || !password) {
+                authError.textContent = "Please enter both email and password.";
+                return;
+            }
+            authError.textContent = "";
+            
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                // Auth listener will handle the rest
+            } catch (error) {
+                console.error("Login failed:", error.message);
+                authError.textContent = `Login failed: ${error.message}`;
             }
         }
 
@@ -419,37 +415,22 @@
         async function handleSignup() {
             const email = emailInput.value;
             const password = passwordInput.value;
-            authError.textContent = '';
-
-            if (password.length < 6) {
-                authError.textContent = 'Password must be at least 6 characters long.';
+            if (!email || !password) {
+                authError.textContent = "Please enter both email and password.";
                 return;
             }
+            if (password.length < 6) {
+                authError.textContent = "Password must be at least 6 characters.";
+                return;
+            }
+            authError.textContent = "";
 
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
-                // onAuthStateChanged will handle the rest
-                showToast("Account created successfully!");
+                // Auth listener will handle the rest
             } catch (error) {
-                console.error("Signup error:", error.message);
+                console.error("Signup failed:", error.message);
                 authError.textContent = `Signup failed: ${error.message}`;
-            }
-        }
-
-        /**
-         * Handles user login.
-         */
-        async function handleLogin() {
-            const email = emailInput.value;
-            const password = passwordInput.value;
-            authError.textContent = '';
-
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                // onAuthStateChanged will handle the rest
-            } catch (error) {
-                console.error("Login error:", error.message);
-                authError.textContent = `Login failed: ${error.message}`;
             }
         }
 
@@ -459,337 +440,146 @@
         async function handleLogout() {
             try {
                 await signOut(auth);
-                // onAuthStateChanged will handle the rest
+                // Auth listener will handle the rest
             } catch (error) {
-                console.error("Logout error:", error.message);
+                console.error("Logout failed:", error);
                 showToast("Logout failed. Please try again.", true);
             }
         }
-        
+
+        // --- Tab Navigation ---
+
         /**
-         * Clears all dynamic UI elements.
+         * Handles tab switching.
+         * @param {Event} e - The click event.
          */
-        function clearUI() {
-            peopleCache = [];
-            paymentsCache = [];
-            paymentsTableBody.innerHTML = '';
-            peopleList.innerHTML = '';
-            paymentNameSelect.innerHTML = '<option value="">Select a person</option>';
-            // Destroy charts if they exist
-            if (personsChartInstance) personsChartInstance.destroy();
-            if (monthlyChartInstance) monthlyChartInstance.destroy();
-            personsChartInstance = null;
-            monthlyChartInstance = null;
+        function handleTabClick(e) {
+            const clickedTab = e.currentTarget;
+            const tabName = clickedTab.dataset.tab;
+
+            // Update button styles
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            clickedTab.classList.add('active');
+
+            // Show/hide content
+            tabContents.forEach(content => {
+                if (content.id === `${tabName}-tab`) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+            
+            // Re-render charts if dashboard is clicked and data is ready
+            if (tabName === 'dashboard' && paymentsCache.length > 0) {
+                 updateCharts();
+            }
         }
 
-        // --- Firestore Listeners ---
+        // --- Firestore & Data Logic ---
 
         /**
-         * Attaches real-time listeners for persons and payments.
-         * @param {string} uid - The current user's ID.
+         * Attaches real-time listeners for payments and people.
          */
-        function attachFirestoreListeners(uid) {
-            if (!db || !uid) return;
+        function attachFirestoreListeners() {
+            if (!userId) return;
+            
+            // Detach old listeners if they exist
+            if (unsubscribePayments) unsubscribePayments();
+            if (unsubscribePeople) unsubscribePeople();
 
-            // Detach any existing listeners first
-            detachFirestoreListeners();
-
-            // --- Persons Listener ---
-            const personsPath = `/artifacts/${appId}/users/${uid}/persons`;
-            const personsRef = collection(db, personsPath);
-            // Note: Not using orderBy as per instructions, will sort in JS.
-            personsUnsubscribe = onSnapshot(personsRef, (snapshot) => {
-                peopleCache = snapshot.docs
-                    .map(doc => ({ id: doc.id, ...doc.data() }))
-                    .sort((a, b) => a.name.localeCompare(b.name)); // Sort in memory
+            // --- People Listener ---
+            const peoplePath = `/artifacts/${appId}/users/${userId}/persons`;
+            const peopleQuery = query(collection(db, peoplePath));
+            
+            unsubscribePeople = onSnapshot(peopleQuery, (snapshot) => {
+                console.log("People listener updated.");
+                peopleCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // Sort by name
+                peopleCache.sort((a, b) => a.name.localeCompare(b.name));
                 
                 renderPeopleList(peopleCache);
-                renderPeopleDropdown(peopleCache);
-                updateCharts(); // Update charts as people might be deleted
+                updatePaymentNameSelect(peopleCache);
                 
             }, (error) => {
-                console.error("Error listening to persons collection:", error);
-                showToast("Could not load people.", true);
+                console.error("Error in people listener:", error);
+                showToast("Error loading people data.", true);
             });
 
             // --- Payments Listener ---
-            const paymentsPath = `/artifacts/${appId}/users/${uid}/payments`;
-            const paymentsRef = collection(db, paymentsPath);
-            // Note: Not using orderBy as per instructions, will sort in JS.
-            paymentsUnsubscribe = onSnapshot(paymentsRef, (snapshot) => {
-                paymentsCache = snapshot.docs
-                    .map(doc => ({ id: doc.id, ...doc.data() }))
-                    .sort((a, b) => new Date(b.date) - new Date(a.date)); // Sort by date descending
+            const paymentsPath = `/artifacts/${appId}/users/${userId}/payments`;
+            const paymentsQuery = query(collection(db, paymentsPath));
+
+            unsubscribePayments = onSnapshot(paymentsQuery, (snapshot) => {
+                console.log("Payments listener updated.");
+                paymentsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // Sort by date, newest first
+                paymentsCache.sort((a, b) => new Date(b.date) - new Date(a.date));
                 
                 renderPaymentsTable(paymentsCache);
-                updateCharts();
+                updateDashboard(paymentsCache);
                 
             }, (error) => {
-                console.error("Error listening to payments collection:", error);
-                showToast("Could not load payments.", true);
+                console.error("Error in payments listener:", error);
+                showToast("Error loading payments data.", true);
             });
         }
 
-        /**
-         * Detaches all active Firestore listeners.
-         */
-        function detachFirestoreListeners() {
-            if (personsUnsubscribe) {
-                personsUnsubscribe();
-                personsUnsubscribe = null;
-            }
-            if (paymentsUnsubscribe) {
-                paymentsUnsubscribe();
-                paymentsUnsubscribe = null;
-            }
-        }
-
-        // --- UI Rendering ---
+        // --- People Management ---
 
         /**
-         * Renders the list of saved people in the "Manage People" tab.
+         * Renders the list of people in the "Manage People" tab.
          * @param {Array} people - Array of person objects.
          */
         function renderPeopleList(people) {
             peopleList.innerHTML = ''; // Clear list
-            if (people.length === 0) {
-                peopleList.appendChild(noPeopleMsg);
-                noPeopleMsg.classList.remove('hidden');
-                return;
-            }
             
-            noPeopleMsg.classList.add('hidden');
-
-            people.forEach(person => {
-                const li = document.createElement('li');
-                li.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
-                li.innerHTML = `
-                    <span class="text-gray-800">${person.name}</span>
-                    <div class="flex space-x-2">
-                        <button data-id="${person.id}" data-name="${person.name}" class="edit-person-btn text-indigo-600 hover:text-indigo-900">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        </button>
-                        <button data-id="${person.id}" data-name="${person.name}" class="delete-person-btn text-red-500 hover:text-red-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    </div>
-                `;
-                peopleList.appendChild(li);
-            });
+            if (people.length === 0) {
+                noPeopleMsg.classList.remove('hidden');
+            } else {
+                noPeopleMsg.classList.add('hidden');
+                people.forEach(person => {
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-center p-3 bg-gray-700 rounded-lg';
+                    li.innerHTML = `
+                        <span class="text-gray-100">${person.name}</span>
+                        <div class="flex space-x-2">
+                            <button data-id="${person.id}" data-name="${person.name}" class="edit-person-btn text-blue-400 hover:text-blue-300">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            </button>
+                            <button data-id="${person.id}" data-name="${person.name}" class="delete-person-btn text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    `;
+                    peopleList.appendChild(li);
+                });
+            }
         }
 
         /**
-         * Populates the <select> dropdown in the payments form.
+         * Populates the <select> dropdown in the payment form.
          * @param {Array} people - Array of person objects.
          */
-        function renderPeopleDropdown(people) {
-            paymentNameSelect.innerHTML = '<option value="">Select a person</option>'; // Clear and add placeholder
+        function updatePaymentNameSelect(people) {
+            const currentVal = paymentNameSelect.value;
+            paymentNameSelect.innerHTML = '<option value="">Select a person</option>'; // Clear and add default
+            
             people.forEach(person => {
                 const option = document.createElement('option');
-                option.value = person.name; // Use name as value
+                option.value = person.name;
                 option.textContent = person.name;
                 paymentNameSelect.appendChild(option);
             });
-        }
-
-        /**
-         * Renders the payments table in the "Payments" tab.
-         * @param {Array} payments - Array of payment objects.
-         */
-        function renderPaymentsTable(payments) {
-            paymentsTableBody.innerHTML = ''; // Clear table
-            if (payments.length === 0) {
-                paymentsTableBody.appendChild(noPaymentsMsg);
-                noPaymentsMsg.classList.remove('hidden');
-                return;
-            }
             
-            noPaymentsMsg.classList.add('hidden');
-
-            payments.forEach(payment => {
-                const tr = document.createElement('tr');
-                tr.className = 'hover:bg-gray-50';
-                tr.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${payment.date}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${payment.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${formatCurrency(payment.amount)}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
-                        <button data-id="${payment.id}" class="edit-payment-btn text-indigo-600 hover:text-indigo-900">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        </button>
-                        <button data-id="${payment.id}" class="delete-payment-btn text-red-500 hover:text-red-700">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-                    </td>
-                `;
-                paymentsTableBody.appendChild(tr);
-            });
-        }
-
-        // --- Chart/Dashboard Logic ---
-
-        /**
-         * Main function to update all charts and dashboard stats.
-         */
-        function updateCharts() {
-            if (!paymentsCache || !peopleCache) return;
-
-            // 1. Update Total Spending
-            const total = paymentsCache.reduce((sum, p) => sum + p.amount, 0);
-            totalSpendingEl.textContent = formatCurrency(total);
-
-            // 2. Update Persons Chart
-            const spendingByPerson = paymentsCache.reduce((acc, payment) => {
-                acc[payment.name] = (acc[payment.name] || 0) + payment.amount;
-                return acc;
-            }, {});
-
-            // Filter out people who are in the list but have 0 spending
-            const personLabels = Object.keys(spendingByPerson);
-            const personData = Object.values(spendingByPerson);
-            
-            renderPersonsChart(personLabels, personData);
-
-            // 3. Update Monthly Chart
-            // First, populate year dropdown
-            populateYearFilter();
-            // Then, render the chart for the selected year
-            renderMonthlyChart();
-        }
-
-        /**
-         * Populates the year filter dropdown based on available payment data.
-         */
-        function populateYearFilter() {
-            const years = new Set(paymentsCache.map(p => new Date(p.date).getFullYear()));
-            if (years.size === 0) {
-                // Add current year if no data
-                years.add(new Date().getFullYear());
-            }
-            
-            const sortedYears = Array.from(years).sort((a, b) => b - a);
-            const currentYearSelection = monthlyReportYearSelect.value;
-            
-            monthlyReportYearSelect.innerHTML = '';
-            sortedYears.forEach(year => {
-                const option = document.createElement('option');
-                option.value = year;
-                option.textContent = year;
-                monthlyReportYearSelect.appendChild(option);
-            });
-            
-            // Try to keep the current selection
-            if (sortedYears.includes(parseInt(currentYearSelection))) {
-                monthlyReportYearSelect.value = currentYearSelection;
-            } else if (sortedYears.length > 0) {
-                monthlyReportYearSelect.value = sortedYears[0];
+            // Try to preserve selection if it still exists
+            if (people.some(p => p.name === currentVal)) {
+                paymentNameSelect.value = currentVal;
             }
         }
         
-        /**
-         * Renders the bar chart for spending by person.
-         * @param {Array} labels - Array of person names.
-         * @param {Array} data - Array of total amounts.
-         */
-        function renderPersonsChart(labels, data) {
-            if (personsChartInstance) {
-                personsChartInstance.destroy();
-            }
-            personsChartInstance = new Chart(personsChartCanvas, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Total Spending',
-                        data: data,
-                        backgroundColor: 'rgba(79, 70, 229, 0.8)', // indigo-600
-                        borderColor: 'rgba(79, 70, 229, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: (value) => formatCurrency(value)
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => formatCurrency(context.raw)
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        /**
-         * Renders the line chart for monthly spending, filtered by the selected year.
-         */
-        function renderMonthlyChart() {
-            const selectedYear = parseInt(monthlyReportYearSelect.value);
-            if (isNaN(selectedYear)) return; // No year selected or no data
-
-            const monthlyTotals = new Array(12).fill(0); // 0 = Jan, 11 = Dec
-
-            const filteredPayments = paymentsCache.filter(p => new Date(p.date).getFullYear() === selectedYear);
-
-            filteredPayments.forEach(payment => {
-                const monthIndex = new Date(payment.date).getMonth(); // 0-11
-                monthlyTotals[monthIndex] += payment.amount;
-            });
-
-            const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-            if (monthlyChartInstance) {
-                monthlyChartInstance.destroy();
-            }
-            monthlyChartInstance = new Chart(monthlyChartCanvas, {
-                type: 'line',
-                data: {
-                    labels: monthLabels,
-                    datasets: [{
-                        label: `Monthly Spending for ${selectedYear}`,
-                        data: monthlyTotals,
-                        fill: false,
-                        borderColor: 'rgb(22, 163, 74)', // green-600
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: (value) => formatCurrency(value)
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: (context) => formatCurrency(context.raw)
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // --- Firestore CRUD Operations ---
-
         /**
          * Handles the submission of the "Add Person" form.
          * @param {Event} e - The form submit event.
@@ -805,7 +595,7 @@
             // Check for duplicates (case-insensitive)
             const existingPerson = peopleCache.find(p => p.name.toLowerCase() === newName.toLowerCase());
             
-            // If in edit mode, allow saving if the name is unchanged or if it's a new name
+            // Check if in edit mode
             if (personId) {
                 // In edit mode
                 if (existingPerson && existingPerson.id !== personId) {
@@ -813,8 +603,8 @@
                      return;
                 }
                 
-                // --- This is a complex atomic update ---
-                // We must update the person doc AND all payment docs that used the old name
+                // --- Atomic update ---
+                // Update the person doc AND all payment docs that used the old name
                 try {
                     const batch = writeBatch(db);
                     
@@ -901,26 +691,23 @@
         /**
          * Handles deleting a person.
          * @param {string} personId - The Firestore document ID of the person.
-         * @param {string} personName - The name of the person (for checking payments).
+         * @param {string} personName - The name of the person.
          */
         async function handleDeletePerson(personId, personName) {
-            // Check if this person is used in any payments
-            if (paymentsCache.some(p => p.name === personName)) {
-                // This is a design choice. We could allow it, but it might orphan data.
-                // For this app, we'll prevent deletion if they are tied to payments.
-                // A better app might ask to re-assign payments.
-                showToast("Cannot delete person. They are associated with existing payments.", true);
+            // Check if this person has any payments
+            const hasPayments = paymentsCache.some(p => p.name === personName);
+            
+            if (hasPayments) {
+                showToast("Cannot delete person. They are associated with payments. Please delete or re-assign their payments first.", true);
                 return;
             }
-
-            // Simple confirmation dialog (replaces window.confirm)
-            // Removed blocking confirm() call as it's not supported here.
             
+            // If no payments, safe to delete
             try {
                 const personPath = `/artifacts/${appId}/users/${userId}/persons/${personId}`;
                 await deleteDoc(doc(db, personPath));
-                
-                showToast("Person deleted successfully.");
+                showToast("Person deleted.");
+                resetPersonForm(); // In case we were editing this one
                 
             } catch (error) {
                 console.error("Error deleting person:", error);
@@ -928,20 +715,42 @@
             }
         }
 
+        // --- Payment Management ---
+
         /**
-         * Resets the payment form to its default (add) state.
+         * Renders the payments table.
+         * @param {Array} payments - Array of payment objects.
          */
-        function resetPaymentForm() {
-            paymentForm.reset();
-            paymentDate.valueAsDate = new Date();
-            paymentIdHidden.value = '';
-            formTitle.textContent = 'Add New Payment';
-            submitPaymentBtn.textContent = 'Add Payment';
-            cancelEditBtn.classList.add('hidden');
+        function renderPaymentsTable(payments) {
+            paymentsTableBody.innerHTML = ''; // Clear table
+            
+            if (payments.length === 0) {
+                noPaymentsMsg.classList.remove('hidden');
+            } else {
+                noPaymentsMsg.classList.add('hidden');
+                payments.forEach(payment => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-gray-700";
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">${payment.date}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">${payment.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">${formatCurrency(payment.amount)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
+                            <button data-id="${payment.id}" class="edit-payment-btn text-blue-400 hover:text-blue-300">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            </button>
+                            <button data-id="${payment.id}" class="delete-payment-btn text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </td>
+                    `;
+                    paymentsTableBody.appendChild(tr);
+                });
+            }
         }
 
         /**
-         * Handles the submission of the payment form (both add and update).
+         * Handles submission of the Add/Edit Payment form.
          * @param {Event} e - The form submit event.
          */
         async function handleSubmitPayment(e) {
@@ -950,7 +759,7 @@
             const paymentData = {
                 date: paymentDate.value,
                 name: paymentNameSelect.value,
-                amount: parseFloat(paymentAmount.value)
+                amount: parseFloat(paymentAmount.value),
             };
             
             if (!paymentData.date || !paymentData.name || isNaN(paymentData.amount) || paymentData.amount <= 0) {
@@ -962,18 +771,18 @@
             
             try {
                 if (paymentId) {
-                    // --- Update existing payment ---
+                    // Update existing payment
                     const paymentPath = `/artifacts/${appId}/users/${userId}/payments/${paymentId}`;
                     await updateDoc(doc(db, paymentPath), paymentData);
-                    showToast("Payment updated successfully!");
+                    showToast("Payment updated!");
                 } else {
-                    // --- Add new payment ---
+                    // Add new payment
                     const paymentsPath = `/artifacts/${appId}/users/${userId}/payments`;
                     await addDoc(collection(db, paymentsPath), {
                         ...paymentData,
                         createdAt: serverTimestamp()
                     });
-                    showToast("Payment added successfully!");
+                    showToast("Payment added!");
                 }
                 resetPaymentForm();
                 
@@ -981,6 +790,18 @@
                 console.error("Error saving payment:", error);
                 showToast("Failed to save payment.", true);
             }
+        }
+        
+        /**
+         * Resets the payment form to its default (add) state.
+         */
+        function resetPaymentForm() {
+            paymentForm.reset();
+            paymentIdHidden.value = '';
+            paymentDate.value = new Date().toISOString().split('T')[0]; // Reset date to today
+            formTitle.textContent = "Add New Payment";
+            submitPaymentBtn.textContent = "Add Payment";
+            cancelEditBtn.classList.add('hidden');
         }
 
         /**
@@ -1013,9 +834,8 @@
         /**
          * Handles deleting a payment.
          * @param {string} paymentId - The Firestore document ID of the payment.
+        */
         async function handleDeletePayment(paymentId) {
-            // Removed blocking confirm() call as it's not supported here.
-            
             try {
                 const paymentPath = `/artifacts/${appId}/users/${userId}/payments/${paymentId}`;
                 await deleteDoc(doc(db, paymentPath));
@@ -1028,39 +848,208 @@
             }
         }
         
-        // --- Event Listeners ---
+        // --- Dashboard & Charts ---
 
         /**
-         * Handles tab switching.
-         * @param {Event} e - The click event.
+         * Updates all dashboard elements.
+         * @param {Array} payments - Array of payment objects.
          */
-        function handleTabClick(e) {
-            const clickedTab = e.currentTarget.dataset.tab;
+        function updateDashboard(payments) {
+            // 1. Calculate and render total spending
+            const totalSpending = payments.reduce((sum, p) => sum + p.amount, 0);
+            totalSpendingEl.textContent = formatCurrency(totalSpending);
+            
+            // 2. Populate year select for monthly report
+            populateYearSelect(payments);
+            
+            // 3. Update charts
+            updateCharts();
+        }
 
-            // Update button styles
-            tabButtons.forEach(btn => {
-                if (btn.dataset.tab === clickedTab) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
+        /**
+         * Triggers re-render of both charts.
+         */
+         function updateCharts() {
+            renderPersonsChart();
+            renderMonthlyChart();
+         }
+        
+        /**
+         * Calculates and renders the "Spending by Person" chart.
+         */
+        function renderPersonsChart() {
+            const ctx = document.getElementById('persons-chart').getContext('2d');
+            
+            // Aggregate spending by person
+            const spending = paymentsCache.reduce((acc, payment) => {
+                acc[payment.name] = (acc[payment.name] || 0) + payment.amount;
+                return acc;
+            }, {});
+
+            const labels = Object.keys(spending);
+            const data = Object.values(spending);
+            
+            // --- NEW: Generate dynamic colors ---
+            const backgroundColors = labels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length] + 'B3'); // with 70% opacity
+            const borderColors = labels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]);
+
+            if (personsChartInstance) {
+                personsChartInstance.destroy();
+            }
+            
+            if (labels.length === 0) {
+                // Don't render an empty chart
+                return;
+            }
+
+            personsChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Spending',
+                        data: data,
+                        backgroundColor: backgroundColors, // Use dynamic colors
+                        borderColor: borderColors,     // Use dynamic colors
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false // Hide legend since colors are self-explanatory
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${formatCurrency(context.raw)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        },
+                        x: {}
+                    }
                 }
             });
-
-            // Show/hide content
-            tabContents.forEach(content => {
-                if (content.id === `tab-${clickedTab}`) {
-                    content.classList.remove('hidden');
-                } else {
-                    content.classList.add('hidden');
-                }
+        }
+        
+        /**
+         * Populates the year dropdown for the monthly chart.
+         * @param {Array} payments - Array of payment objects.
+         */
+        function populateYearSelect(payments) {
+            if (payments.length === 0) return;
+            
+            const years = [...new Set(payments.map(p => new Date(p.date).getFullYear()))];
+            years.sort((a, b) => b - a); // Newest first
+            
+            const currentVal = monthlyReportYearSelect.value;
+            monthlyReportYearSelect.innerHTML = ''; // Clear
+            
+            years.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                monthlyReportYearSelect.appendChild(option);
             });
             
-            // Re-render charts if switching to dashboard, as canvas might have been hidden
-            if(clickedTab === 'dashboard') {
-                updateCharts();
+            // Restore selection or default to newest
+            if (years.includes(parseInt(currentVal))) {
+                monthlyReportYearSelect.value = currentVal;
+            } else {
+                monthlyReportYearSelect.value = years[0];
             }
         }
 
+        /**
+         * Calculates and renders the "Monthly Report" line chart.
+         */
+        function renderMonthlyChart() {
+            const ctx = document.getElementById('monthly-chart').getContext('2d');
+            const selectedYear = parseInt(monthlyReportYearSelect.value);
+
+            if (isNaN(selectedYear)) {
+                // No data or year not selected yet
+                if (monthlyChartInstance) monthlyChartInstance.destroy();
+                return;
+            }
+            
+            // Initialize 12 months with 0
+            const monthlyTotals = new Array(12).fill(0);
+            
+            // Filter payments for the selected year
+            const paymentsForYear = paymentsCache.filter(p => new Date(p.date).getFullYear() === selectedYear);
+            
+            // Aggregate spending by month
+            paymentsForYear.forEach(payment => {
+                const month = new Date(payment.date).getMonth(); // 0 = Jan, 11 = Dec
+                monthlyTotals[month] += payment.amount;
+            });
+            
+            const labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const data = monthlyTotals;
+            
+            if (monthlyChartInstance) {
+                monthlyChartInstance.destroy();
+            }
+
+            monthlyChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `Spending in ${selectedYear}`,
+                        data: data,
+                        fill: true,
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)', // blue-500 with opacity
+                        borderColor: 'rgba(59, 130, 246, 1)',     // blue-500
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                           display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${formatCurrency(context.raw)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // --- Event Listeners ---
+        
+        window.onload = initializeFirebase;
+        
         // --- Auth Listeners ---
         loginBtn.addEventListener('click', handleLogin);
         signupBtn.addEventListener('click', handleSignup);
@@ -1076,9 +1065,9 @@
         cancelEditBtn.addEventListener('click', resetPaymentForm);
         monthlyReportYearSelect.addEventListener('change', renderMonthlyChart);
 
-        // --- Dynamic Content Listeners (Event Delegation) ---
+        // --- Dynamic Table/List Listeners (Event Delegation) ---
         
-        // Listener for "Manage People" list
+        // Listener for "People" list
         peopleList.addEventListener('click', (e) => {
             const deleteBtn = e.target.closest('.delete-person-btn');
             if (deleteBtn) {
@@ -1091,7 +1080,7 @@
             const editBtn = e.target.closest('.edit-person-btn');
             if (editBtn) {
                 const id = editBtn.dataset.id;
-                const name = editBtn.dataset.name;
+                const name = editBtn.dataset.name; // Fixed: removed extra dot from 'dataset..name'
                 handleEditPerson(id, name);
             }
         });
@@ -1100,24 +1089,17 @@
         paymentsTableBody.addEventListener('click', (e) => {
             const deleteBtn = e.target.closest('.delete-payment-btn');
             if (deleteBtn) {
-                handleDeletePayment(deleteBtn.dataset.id);
-                return; // Prevent edit from firing
+                const id = deleteBtn.dataset.id;
+                handleDeletePayment(id);
+                return;
             }
-            
+
             const editBtn = e.target.closest('.edit-payment-btn');
             if (editBtn) {
-                handleEditPayment(editBtn.dataset.id);
+                const id = editBtn.dataset.id;
+                handleEditPayment(id);
             }
         });
-
-        // --- Icons ---
-        // Icons are now inline SVGs, no JS needed.
-        window.onload = () => {
-            // Initialize Firebase App FIRST
-            initializeFirebase();
-            
-            // Icon loading removed - no longer necessary.
-        };
 
     </script>
 </body>
