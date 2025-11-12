@@ -6,8 +6,8 @@
     <title>Payment Manager Pro</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js for graphs -->
-    <script src="https://cdn.jsdelivr.npm/chart.js"></script>
+    <!-- Chart.js for graphs - UPDATED to a stable, versioned CDN to fix loading error -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -150,11 +150,16 @@
                 <div id="tab-people" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Add Person Form -->
                     <form id="person-form" class="bg-white p-6 rounded-lg shadow-lg">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800">Add New Person</h3>
+                        <h3 id="person-form-title" class="text-xl font-semibold mb-4 text-gray-800">Add New Person</h3>
                         <div class="flex space-x-4">
                             <input type="text" id="person-name" placeholder="Enter new name" required class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-green-700 transition duration-150">Add</button>
+                            <button type="submit" id="submit-person-btn" class="bg-green-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-green-700 transition duration-150">Add</button>
                         </div>
+                        <div class="mt-4">
+                             <button type="button" id="cancel-person-edit-btn" class="hidden w-full bg-gray-500 text-white px-6 py-2 rounded-lg shadow-md hover:bg-gray-600 transition duration-150">Cancel Edit</button>
+                        </div>
+                        <input type="hidden" id="person-id-hidden">
+                        <input type="hidden" id="person-old-name-hidden">
                     </form>
 
                     <!-- People List -->
@@ -272,6 +277,11 @@
         const personNameInput = document.getElementById('person-name');
         const peopleList = document.getElementById('people-list');
         const noPeopleMsg = document.getElementById('no-people-msg');
+        const personFormTitle = document.getElementById('person-form-title');
+        const submitPersonBtn = document.getElementById('submit-person-btn');
+        const cancelPersonEditBtn = document.getElementById('cancel-person-edit-btn');
+        const personIdHidden = document.getElementById('person-id-hidden');
+        const personOldNameHidden = document.getElementById('person-old-name-hidden');
 
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
@@ -548,9 +558,14 @@
                 li.className = 'flex justify-between items-center p-3 bg-gray-50 rounded-lg';
                 li.innerHTML = `
                     <span class="text-gray-800">${person.name}</span>
-                    <button data-id="${person.id}" data-name="${person.name}" class="delete-person-btn text-red-500 hover:text-red-700">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
+                    <div class="flex space-x-2">
+                        <button data-id="${person.id}" data-name="${person.name}" class="edit-person-btn text-indigo-600 hover:text-indigo-900">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        </button>
+                        <button data-id="${person.id}" data-name="${person.name}" class="delete-person-btn text-red-500 hover:text-red-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
                 `;
                 peopleList.appendChild(li);
             });
@@ -772,32 +787,108 @@
          * Handles the submission of the "Add Person" form.
          * @param {Event} e - The form submit event.
          */
-        async function handleAddPerson(e) {
+        async function handleSubmitPerson(e) {
             e.preventDefault();
-            const name = personNameInput.value.trim();
-            if (!name) return;
+            const newName = personNameInput.value.trim();
+            if (!newName) return;
+
+            const personId = personIdHidden.value;
+            const oldName = personOldNameHidden.value;
             
             // Check for duplicates (case-insensitive)
-            if (peopleCache.some(p => p.name.toLowerCase() === name.toLowerCase())) {
-                showToast("This person already exists.", true);
-                return;
-            }
+            const existingPerson = peopleCache.find(p => p.name.toLowerCase() === newName.toLowerCase());
+            
+            // If in edit mode, allow saving if the name is unchanged or if it's a new name
+            if (personId) {
+                // In edit mode
+                if (existingPerson && existingPerson.id !== personId) {
+                     showToast("This name is already used by another person.", true);
+                     return;
+                }
+                
+                // --- This is a complex atomic update ---
+                // We must update the person doc AND all payment docs that used the old name
+                try {
+                    const batch = writeBatch(db);
+                    
+                    // 1. Update the person document
+                    const personDocPath = `/artifacts/${appId}/users/${userId}/persons/${personId}`;
+                    batch.update(doc(db, personDocPath), { name: newName });
+                    
+                    // 2. Find and update all associated payments
+                    const paymentsPath = `/artifacts/${appId}/users/${userId}/payments`;
+                    const paymentsQuery = query(collection(db, paymentsPath), where("name", "==", oldName));
+                    
+                    const querySnapshot = await getDocs(paymentsQuery);
+                    querySnapshot.forEach((paymentDoc) => {
+                        // Update the 'name' field on each payment
+                        batch.update(paymentDoc.ref, { name: newName });
+                    });
+                    
+                    // 3. Commit the batch
+                    await batch.commit();
+                    
+                    showToast("Person and all associated payments updated!");
+                    resetPersonForm();
+                    
+                } catch (error) {
+                    console.error("Error updating person and payments:", error);
+                    showToast("Failed to update person.", true);
+                }
+                
+            } else {
+                // In add mode
+                if (existingPerson) {
+                    showToast("This person already exists.", true);
+                    return;
+                }
 
-            try {
-                const personsPath = `/artifacts/${appId}/users/${userId}/persons`;
-                const personsRef = collection(db, personsPath);
-                await addDoc(personsRef, {
-                    name: name,
-                    createdAt: serverTimestamp()
-                });
-                
-                personNameInput.value = '';
-                showToast("Person added successfully!");
-                
-            } catch (error) {
-                console.error("Error adding person:", error);
-                showToast("Failed to add person.", true);
+                try {
+                    const personsPath = `/artifacts/${appId}/users/${userId}/persons`;
+                    const personsRef = collection(db, personsPath);
+                    await addDoc(personsRef, {
+                        name: newName,
+                        createdAt: serverTimestamp()
+                    });
+                    
+                    personNameInput.value = '';
+                    showToast("Person added successfully!");
+                    
+                } catch (error) {
+                    console.error("Error adding person:", error);
+                    showToast("Failed to add person.", true);
+                }
             }
+        }
+
+        /**
+         * Populates the person form for editing.
+         * @param {string} personId - The Firestore document ID of the person.
+         * @param {string} personName - The current name of the person.
+         */
+        function handleEditPerson(personId, personName) {
+            personNameInput.value = personName;
+            personIdHidden.value = personId;
+            personOldNameHidden.value = personName;
+            
+            personFormTitle.textContent = "Edit Person's Name";
+            submitPersonBtn.textContent = "Update Name";
+            cancelPersonEditBtn.classList.remove('hidden');
+            
+            personForm.scrollIntoView({ behavior: 'smooth' });
+            personNameInput.focus();
+        }
+
+        /**
+         * Resets the person form to its default (add) state.
+         */
+        function resetPersonForm() {
+            personForm.reset();
+            personIdHidden.value = '';
+            personOldNameHidden.value = '';
+            personFormTitle.textContent = 'Add New Person';
+            submitPersonBtn.textContent = 'Add';
+            cancelPersonEditBtn.classList.add('hidden');
         }
 
         /**
@@ -889,6 +980,32 @@
          * Populates the payment form for editing.
          * @param {string} paymentId - The Firestore document ID of the payment.
          */
+        function handleEditPayment(paymentId) {
+            // Find the payment in our local cache
+            const payment = paymentsCache.find(p => p.id === paymentId);
+            if (!payment) {
+                showToast("Could not find payment to edit.", true);
+                return;
+            }
+            
+            // Populate the form
+            paymentDate.value = payment.date;
+            paymentNameSelect.value = payment.name;
+            paymentAmount.value = payment.amount;
+            paymentIdHidden.value = paymentId;
+            
+            // Update UI to "edit mode"
+            formTitle.textContent = "Edit Payment";
+            submitPaymentBtn.textContent = "Update Payment";
+            cancelEditBtn.classList.remove('hidden');
+            
+            // Scroll to the form
+            paymentForm.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        /**
+         * Handles deleting a payment.
+         * @param {string} paymentId - The Firestore document ID of the payment.
         async function handleDeletePayment(paymentId) {
             // Removed blocking confirm() call as it's not supported here.
             
@@ -946,7 +1063,8 @@
         tabButtons.forEach(btn => btn.addEventListener('click', handleTabClick));
 
         // --- Form Listeners ---
-        personForm.addEventListener('submit', handleAddPerson);
+        personForm.addEventListener('submit', handleSubmitPerson);
+        cancelPersonEditBtn.addEventListener('click', resetPersonForm);
         paymentForm.addEventListener('submit', handleSubmitPayment);
         cancelEditBtn.addEventListener('click', resetPaymentForm);
         monthlyReportYearSelect.addEventListener('change', renderMonthlyChart);
@@ -960,6 +1078,14 @@
                 const id = deleteBtn.dataset.id;
                 const name = deleteBtn.dataset.name;
                 handleDeletePerson(id, name);
+                return; // Prevent edit from firing
+            }
+            
+            const editBtn = e.target.closest('.edit-person-btn');
+            if (editBtn) {
+                const id = editBtn.dataset.id;
+                const name = editBtn.dataset.name;
+                handleEditPerson(id, name);
             }
         });
         
