@@ -210,10 +210,28 @@
 
         // --- MANDATORY GLOBAL VARS ---
         // These are provided by the environment. DO NOT change them.
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        
+        // --- MODIFICATION ---
+        // The __firebase_config from the environment is being IGNORED per your request.
+        // We are now hard-coding your config for 'my-chain-reaction-game'.
+        // This will allow you to log in, but breaks the intended environment integration.
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJ9K9fQ0ThMB7aXB6qNHr3_yLUdqJgnCM",
+            authDomain: "my-chain-reaction-game.firebaseapp.com",
+            projectId: "my-chain-reaction-game",
+            storageBucket: "my-chain-reaction-game.appspot.com",
+            messagingSenderId: "32751418407",
+            appId: "1:32751418407:web:ff8244007ef2b099d56202"
+        };
+        // const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        
+        // The appId is now irrelevant as we are not using the environment's project.
+        // Using a default value.
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'my-chain-reaction-game';
+        
+        // The initialAuthToken is also irrelevant as it's for the environment's project.
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-        // --- END MANDATORY GLOBAL VARS ---
+        // --- END MODIFICATION ---
 
         // Firebase App Initialization
         let app, auth, db;
@@ -307,6 +325,16 @@
          */
         async function initializeFirebase() {
             try {
+                // --- ADDED GUARD CLAUSE ---
+                // Check if the mandatory config is missing or empty.
+                if (Object.keys(firebaseConfig).length === 0) {
+                    console.error("Fatal Error: Firebase config is missing or empty.");
+                    authError.textContent = "Fatal Error: App configuration is missing. Cannot load.";
+                    authError.classList.remove('hidden'); // Ensure the error is visible
+                    return; // Stop all further execution
+                }
+                // --- END GUARD CLAUSE ---
+
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
@@ -345,7 +373,16 @@
 
                 // Sign in the user
                 if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
+                    // This will likely fail now as the token is for a different project,
+                    // but we will fall back to manual login.
+                    try {
+                        await signInWithCustomToken(auth, initialAuthToken);
+                    } catch (tokenError) {
+                        console.warn("Initial token sign-in failed (expected, as projects differ). Please log in manually.");
+                        if (auth.currentUser === null) {
+                             console.log("No initial token. User must log in or sign up.");
+                        }
+                    }
                 } else if (auth.currentUser === null) {
                     // Fallback for environments without a custom token (e.g., local testing)
                     // In a real-world scenario, you'd only show login/signup.
