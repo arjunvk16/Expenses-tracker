@@ -102,7 +102,10 @@
                     <!-- Spending by Person -->
                     <div class="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-2">
                         <h3 class="text-xl font-semibold mb-4 text-gray-100">Spending by Person</h3>
-                        <canvas id="persons-chart"></canvas>
+                        <!-- Wrapper DIV to constrain chart height -->
+                        <div class="relative h-80">
+                            <canvas id="persons-chart"></canvas>
+                        </div>
                     </div>
 
                     <!-- Monthly Report -->
@@ -111,7 +114,10 @@
                         <select id="monthly-report-year" class="mb-4 w-full md:w-auto px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
                             <!-- Years will be populated by JS -->
                         </select>
-                        <canvas id="monthly-chart" style="max-height: 400px;"></canvas>
+                        <!-- Wrapper DIV to constrain chart height -->
+                        <div class="relative h-96">
+                            <canvas id="monthly-chart"></canvas>
+                        </div>
                     </div>
                 </section>
 
