@@ -145,33 +145,61 @@
 
                 <!-- Payments Tab -->
                 <section id="payments-tab" class="tab-content hidden space-y-6">
+                    
+                    <!-- Payment Templates (NEW) -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h3 class="text-xl font-semibold text-gray-100 mb-4">Payment Templates</h3>
+                        <div id="template-buttons" class="flex flex-wrap gap-2">
+                            <!-- Template buttons populated by JS -->
+                        </div>
+                        <p id="no-templates-msg" class="text-gray-400 text-sm hidden">No templates saved. Add a payment and check "Save as Template" to create one.</p>
+                    </div>
+
                     <!-- Add/Edit Payment Form -->
                     <form id="payment-form" class="bg-gray-800 p-6 rounded-lg shadow-lg">
                         <h3 id="form-title" class="text-xl font-semibold mb-4 text-gray-100">Add New Payment</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                             <div>
                                 <label for="payment-date" class="block text-sm font-medium text-gray-300">Date</label>
                                 <input type="date" id="payment-date" required class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400">
                             </div>
                             <div>
-                                <label for="payment-name" class="block text-sm font-medium text-gray-300">Name</label>
-                                <select id="payment-name" required class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
-                                    <option value="">Select a person</option>
+                                <label for="payment-name-input" class="block text-sm font-medium text-gray-300">Name</label>
+                                <input list="payment-name-list" id="payment-name-input" required class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white" placeholder="Type or select name...">
+                                <datalist id="payment-name-list">
                                     <!-- Names populated by JS -->
-                                </select>
+                                </datalist>
                             </div>
                             <div>
-                                <label for="payment-category" class="block text-sm font-medium text-gray-300">Category</label>
-                                <select id="payment-category" required class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
-                                    <option value="">Select a category</option>
+                                <label for="payment-category-input" class="block text-sm font-medium text-gray-300">Category</label>
+                                <input list="payment-category-list" id="payment-category-input" required class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white" placeholder="Type or select category...">
+                                <datalist id="payment-category-list">
                                     <!-- Categories populated by JS -->
-                                </select>
+                                </datalist>
                             </div>
                             <div>
                                 <label for="payment-amount" class="block text-sm font-medium text-gray-300">Amount (₹)</label>
                                 <input type="number" id="payment-amount" step="0.01" min="0" required class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400" placeholder="0.00">
                             </div>
+                            <!-- NEW Notes Field -->
+                            <div class="md:col-span-1">
+                                <label for="payment-notes" class="block text-sm font-medium text-gray-300">Notes</label>
+                                <input type="text" id="payment-notes" class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400" placeholder="e.g., Morning auto">
+                            </div>
                         </div>
+
+                        <!-- Template Options (NEW) -->
+                        <div class="mt-6 space-y-4">
+                            <div class="flex items-center">
+                                <input id="save-template-checkbox" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-600 rounded focus:ring-blue-500 bg-gray-700">
+                                <label for="save-template-checkbox" class="ml-2 block text-sm text-gray-300">Save as Payment Template</label>
+                            </div>
+                            <div id="template-name-wrapper" class="hidden">
+                                <label for="template-name-input" class="block text-sm font-medium text-gray-300">Template Name</label>
+                                <input type="text" id="template-name-input" class="mt-1 w-full md:w-1/2 px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400" placeholder="e.g., Rent, Phone Bill">
+                            </div>
+                        </div>
+
                         <div class="mt-6 flex space-x-4">
                             <button type="submit" id="submit-payment-btn" class="bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-150">Add Payment</button>
                             <button type="button" id="cancel-edit-btn" class="hidden bg-gray-500 text-white px-6 py-2 rounded-lg shadow-md hover:bg-gray-600 transition duration-150">Cancel Edit</button>
@@ -179,19 +207,45 @@
                         <input type="hidden" id="payment-id-hidden">
                     </form>
 
-                    <!-- Export Data -->
+                    <!-- Filter Payments (NEW) -->
                     <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
-                        <h3 class="text-xl font-semibold text-gray-100 mb-4">Export Data (CSV)</h3>
-                        <div class="flex flex-wrap gap-4">
-                            <button id="export-week-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition duration-150">Export This Week</button>
-                            <button id="export-month-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition duration-150">Export This Month</button>
-                            <button id="export-all-btn" class="bg-gray-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-gray-700 transition duration-150">Export All</button>
+                        <h3 class="text-xl font-semibold text-gray-100 mb-4">Filter Payments</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            <div>
+                                <label for="filter-name" class="block text-sm font-medium text-gray-300">Name</label>
+                                <select id="filter-name" class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                                    <option value="">All People</option>
+                                    <!-- Names populated by JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label for="filter-category" class="block text-sm font-medium text-gray-300">Category</label>
+                                <select id="filter-category" class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                                    <option value="">All Categories</option>
+                                    <!-- Categories populated by JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label for="filter-start-date" class="block text-sm font-medium text-gray-300">Start Date</label>
+                                <input type="date" id="filter-start-date" class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400">
+                            </div>
+                            <div>
+                                <label for="filter-end-date" class="block text-sm font-medium text-gray-300">End Date</label>
+                                <input type="date" id="filter-end-date" class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400">
+                            </div>
+                            <div class="flex items-end">
+                                <button id="filter-reset-btn" class="w-full bg-gray-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-gray-700 transition duration-150">Reset</button>
+                            </div>
                         </div>
                     </div>
 
+
                     <!-- All Payments Table -->
                     <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-                        <h3 class="text-xl font-semibold text-gray-100 p-6">All Payments</h3>
+                        <div class="flex justify-between items-center p-6">
+                            <h3 class="text-xl font-semibold text-gray-100">All Payments</h3>
+                             <button id="export-filtered-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition duration-150">Export Filtered (CSV)</button>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-700">
                                 <thead class="bg-gray-700">
@@ -200,6 +254,7 @@
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Category</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Amount</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Notes</th> <!-- NEW -->
                                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
                                     </tr>
                                 </thead>
@@ -209,6 +264,16 @@
                             </table>
                         </div>
                         <p id="no-payments-msg" class="p-6 text-center text-gray-400 hidden">No payments recorded yet.</p>
+                        <p id="no-filtered-payments-msg" class="p-6 text-center text-gray-400 hidden">No payments match the current filters.</p>
+                    </div>
+
+                    <!-- Manage Templates (NEW) -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-100">Manage Templates</h3>
+                        <ul id="template-list" class="space-y-3">
+                            <!-- List populated by JS -->
+                        </ul>
+                        <p id="no-templates-list-msg" class="text-center text-gray-400 hidden">No templates saved yet.</p>
                     </div>
                 </section>
 
@@ -288,14 +353,17 @@
         let userId = null;
         let unsubscribePayments = null;
         let unsubscribePeople = null;
-        let unsubscribeCategories = null; // New
+        let unsubscribeCategories = null;
+        let unsubscribeTemplates = null; // New
         let paymentsCache = [];
         let peopleCache = [];
-        let categoriesCache = []; // New
+        let categoriesCache = [];
+        let templatesCache = []; // New
+        let filteredPaymentsCache = []; // New
         let personsChartInstance = null;
         let monthlyChartInstance = null;
-        let categoriesChartInstance = null; // New
-        let dashboardDateFilter = 'all'; // New: 'all', 'year', 'month'
+        let categoriesChartInstance = null;
+        let dashboardDateFilter = 'all';
         
         // --- CRITICAL FIX ---
         const appId = 'my-chain-reaction-game';
@@ -322,15 +390,35 @@
         const paymentForm = document.getElementById('payment-form');
         const formTitle = document.getElementById('form-title');
         const paymentDate = document.getElementById('payment-date');
-        const paymentNameSelect = document.getElementById('payment-name');
-        const paymentCategorySelect = document.getElementById('payment-category'); // New
+        const paymentNameInput = document.getElementById('payment-name-input'); // Changed
+        const paymentNameDatalist = document.getElementById('payment-name-list'); // Changed
+        const paymentCategoryInput = document.getElementById('payment-category-input'); // Changed
+        const paymentCategoryDatalist = document.getElementById('payment-category-list'); // Changed
         const paymentAmount = document.getElementById('payment-amount');
+        const paymentNotes = document.getElementById('payment-notes'); // NEW
         const submitPaymentBtn = document.getElementById('submit-payment-btn');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
         const paymentIdHidden = document.getElementById('payment-id-hidden');
         const paymentsTableBody = document.getElementById('payments-table-body');
         const noPaymentsMsg = document.getElementById('no-payments-msg');
+        const noFilteredPaymentsMsg = document.getElementById('no-filtered-payments-msg'); // New
+
+        // Payment Templates (New)
+        const saveTemplateCheckbox = document.getElementById('save-template-checkbox');
+        const templateNameWrapper = document.getElementById('template-name-wrapper');
+        const templateNameInput = document.getElementById('template-name-input');
+        const templateButtonsContainer = document.getElementById('template-buttons');
+        const noTemplatesMsg = document.getElementById('no-templates-msg');
+        const templateList = document.getElementById('template-list');
+        const noTemplatesListMsg = document.getElementById('no-templates-list-msg');
         
+        // Payment Filters (New)
+        const filterName = document.getElementById('filter-name');
+        const filterCategory = document.getElementById('filter-category');
+        const filterStartDate = document.getElementById('filter-start-date');
+        const filterEndDate = document.getElementById('filter-end-date');
+        const filterResetBtn = document.getElementById('filter-reset-btn');
+
         // People
         const personForm = document.getElementById('person-form');
         const personNameInput = document.getElementById('person-name');
@@ -342,7 +430,7 @@
         const personIdHidden = document.getElementById('person-id-hidden');
         const personOldNameHidden = document.getElementById('person-old-name-hidden');
 
-        // Categories (New)
+        // Categories
         const categoryForm = document.getElementById('category-form');
         const categoryNameInput = document.getElementById('category-name');
         const categoryList = document.getElementById('category-list');
@@ -354,15 +442,13 @@
         const categoryOldNameHidden = document.getElementById('category-old-name-hidden');
         
         // Dashboard
-        const dashboardFilterButtons = document.querySelectorAll('.filter-btn'); // New
+        const dashboardFilterButtons = document.querySelectorAll('.filter-btn');
         const totalSpendingEl = document.getElementById('total-spending');
         const monthlyReportYearSelect = document.getElementById('monthly-report-year');
         const noCategoryDataMsg = document.getElementById('no-category-data-msg');
 
         // Export
-        const exportWeekBtn = document.getElementById('export-week-btn');
-        const exportMonthBtn = document.getElementById('export-month-btn');
-        const exportAllBtn = document.getElementById('export-all-btn');
+        const exportFilteredBtn = document.getElementById('export-filtered-btn'); // Changed
         
         // --- Chart Config ---
         const CHART_COLORS = [
@@ -376,6 +462,7 @@
          * Utility: Show toast message
          */
         function showToast(message, isError = false) {
+            // ... (same as before)
             const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.classList.remove('hidden');
@@ -395,6 +482,7 @@
          * Utility: Format number as INR currency
          */
         function formatCurrency(amount) {
+            // ... (same as before)
             return new Intl.NumberFormat('en-IN', {
                 style: 'currency',
                 currency: 'INR',
@@ -407,6 +495,7 @@
          * Initializes the Firebase app and auth.
          */
         function initializeFirebase() {
+            // ... (same as before)
             try {
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
@@ -453,11 +542,14 @@
                     
                     if (unsubscribePayments) unsubscribePayments();
                     if (unsubscribePeople) unsubscribePeople();
-                    if (unsubscribeCategories) unsubscribeCategories(); // New
+                    if (unsubscribeCategories) unsubscribeCategories();
+                    if (unsubscribeTemplates) unsubscribeTemplates(); // New
                     
                     paymentsCache = [];
                     peopleCache = [];
-                    categoriesCache = []; // New
+                    categoriesCache = [];
+                    templatesCache = []; // New
+                    filteredPaymentsCache = []; // New
                 }
                 authLoading.classList.add('hidden');
             });
@@ -551,7 +643,7 @@
         // --- Firestore & Data Logic ---
 
         /**
-         * Attaches real-time listeners for payments, people, and categories.
+         * Attaches real-time listeners for all data collections.
          */
         function attachFirestoreListeners() {
             if (!userId) return;
@@ -559,6 +651,7 @@
             if (unsubscribePayments) unsubscribePayments();
             if (unsubscribePeople) unsubscribePeople();
             if (unsubscribeCategories) unsubscribeCategories();
+            if (unsubscribeTemplates) unsubscribeTemplates(); // New
 
             // --- People Listener ---
             const peoplePath = `/artifacts/${appId}/users/${userId}/persons`;
@@ -570,11 +663,12 @@
                 peopleCache.sort((a, b) => a.name.localeCompare(b.name));
                 
                 renderPeopleList(peopleCache);
-                updatePaymentNameSelect(peopleCache);
+                updatePaymentNameDatalist(peopleCache); // Changed
+                populatePaymentFilterSelects(); // New
                 
             }, (error) => console.error("Error in people listener:", error));
 
-            // --- Categories Listener (New) ---
+            // --- Categories Listener ---
             const categoriesPath = `/artifacts/${appId}/users/${userId}/categories`;
             const categoriesQuery = query(collection(db, categoriesPath));
             
@@ -584,9 +678,24 @@
                 categoriesCache.sort((a, b) => a.name.localeCompare(b.name));
                 
                 renderCategoriesList(categoriesCache);
-                updatePaymentCategorySelect(categoriesCache);
+                updatePaymentCategoryDatalist(categoriesCache); // Changed
+                populatePaymentFilterSelects(); // New
                 
             }, (error) => console.error("Error in categories listener:", error));
+
+            // --- Templates Listener (New) ---
+            const templatesPath = `/artifacts/${appId}/users/${userId}/paymentTemplates`;
+            const templatesQuery = query(collection(db, templatesPath));
+            
+            unsubscribeTemplates = onSnapshot(templatesQuery, (snapshot) => {
+                console.log("Templates listener updated.");
+                templatesCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                templatesCache.sort((a, b) => a.templateName.localeCompare(b.templateName));
+                
+                renderTemplateButtons(templatesCache);
+                renderTemplateList(templatesCache);
+                
+            }, (error) => console.error("Error in templates listener:", error));
 
             // --- Payments Listener ---
             const paymentsPath = `/artifacts/${appId}/users/${userId}/payments`;
@@ -597,18 +706,14 @@
                 paymentsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 paymentsCache.sort((a, b) => new Date(b.date) - new Date(a.date));
                 
-                renderPaymentsTable(paymentsCache);
-                updateDashboard(); // Update dashboard with new data
+                applyAndRenderPaymentFilters(); // Changed: Now uses filter function
+                updateDashboard();
                 
             }, (error) => console.error("Error in payments listener:", error));
         }
 
         // --- People Management ---
-        // ... (All functions: renderPeopleList, updatePaymentNameSelect, handleSubmitPerson, handleEditPerson, resetPersonForm, handleDeletePerson are IDENTICAL to before) ...
-        
-        /**
-         * Renders the list of people in the "Manage People" tab.
-         */
+        // ... (All functions: renderPeopleList, handleSubmitPerson, handleEditPerson, resetPersonForm, handleDeletePerson are IDENTICAL to before) ...
         function renderPeopleList(people) {
             peopleList.innerHTML = '';
             
@@ -634,29 +739,6 @@
                 });
             }
         }
-
-        /**
-         * Populates the <select> dropdown in the payment form.
-         */
-        function updatePaymentNameSelect(people) {
-            const currentVal = paymentNameSelect.value;
-            paymentNameSelect.innerHTML = '<option value="">Select a person</option>';
-            
-            people.forEach(person => {
-                const option = document.createElement('option');
-                option.value = person.name;
-                option.textContent = person.name;
-                paymentNameSelect.appendChild(option);
-            });
-            
-            if (people.some(p => p.name === currentVal)) {
-                paymentNameSelect.value = currentVal;
-            }
-        }
-        
-        /**
-         * Handles the submission of the "Add Person" form.
-         */
         async function handleSubmitPerson(e) {
             e.preventDefault();
             const newName = personNameInput.value.trim();
@@ -715,10 +797,6 @@
                 }
             }
         }
-
-        /**
-         * Populates the person form for editing.
-         */
         function handleEditPerson(personId, personName) {
             personNameInput.value = personName;
             personIdHidden.value = personId;
@@ -729,10 +807,6 @@
             personForm.scrollIntoView({ behavior: 'smooth' });
             personNameInput.focus();
         }
-
-        /**
-         * Resets the person form to its default (add) state.
-         */
         function resetPersonForm() {
             personForm.reset();
             personIdHidden.value = '';
@@ -741,10 +815,6 @@
             submitPersonBtn.textContent = 'Add';
             cancelPersonEditBtn.classList.add('hidden');
         }
-
-        /**
-         * Handles deleting a person.
-         */
         async function handleDeletePerson(personId, personName) {
             const hasPayments = paymentsCache.some(p => p.name === personName);
             
@@ -765,11 +835,20 @@
             }
         }
 
-        // --- Category Management (New) ---
-
         /**
-         * Renders the list of categories in the "Manage Categories" tab.
+         * Populates the <datalist> in the payment form for names.
          */
+        function updatePaymentNameDatalist(people) {
+            paymentNameDatalist.innerHTML = '';
+            people.forEach(person => {
+                const option = document.createElement('option');
+                option.value = person.name;
+                paymentNameDatalist.appendChild(option);
+            });
+        }
+
+        // --- Category Management ---
+        // ... (All functions: renderCategoriesList, handleSubmitCategory, handleEditCategory, resetCategoryForm, handleDeleteCategory are IDENTICAL to before) ...
         function renderCategoriesList(categories) {
             categoryList.innerHTML = '';
             
@@ -795,29 +874,6 @@
                 });
             }
         }
-
-        /**
-         * Populates the Category <select> dropdown in the payment form.
-         */
-        function updatePaymentCategorySelect(categories) {
-            const currentVal = paymentCategorySelect.value;
-            paymentCategorySelect.innerHTML = '<option value="">Select a category</option>';
-            
-            categories.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.name;
-                option.textContent = category.name;
-                paymentCategorySelect.appendChild(option);
-            });
-            
-            if (categories.some(c => c.name === currentVal)) {
-                paymentCategorySelect.value = currentVal;
-            }
-        }
-
-        /**
-         * Handles the submission of the "Add/Edit Category" form.
-         */
         async function handleSubmitCategory(e) {
             e.preventDefault();
             const newName = categoryNameInput.value.trim();
@@ -877,10 +933,6 @@
                 }
             }
         }
-
-        /**
-         * Populates the category form for editing.
-         */
         function handleEditCategory(categoryId, categoryName) {
             categoryNameInput.value = categoryName;
             categoryIdHidden.value = categoryId;
@@ -891,10 +943,6 @@
             categoryForm.scrollIntoView({ behavior: 'smooth' });
             categoryNameInput.focus();
         }
-
-        /**
-         * Resets the category form to its default (add) state.
-         */
         function resetCategoryForm() {
             categoryForm.reset();
             categoryIdHidden.value = '';
@@ -903,10 +951,6 @@
             submitCategoryBtn.textContent = 'Add';
             cancelCategoryEditBtn.classList.add('hidden');
         }
-
-        /**
-         * Handles deleting a category.
-         */
         async function handleDeleteCategory(categoryId, categoryName) {
             const hasPayments = paymentsCache.some(p => p.category === categoryName);
             
@@ -927,19 +971,99 @@
             }
         }
 
+        /**
+         * Populates the <datalist> in the payment form for categories.
+         */
+        function updatePaymentCategoryDatalist(categories) {
+            paymentCategoryDatalist.innerHTML = '';
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.name;
+                paymentCategoryDatalist.appendChild(option);
+            });
+        }
+        
 
         // --- Payment Management ---
 
         /**
+         * Applies filters to the paymentsCache and renders the table.
+         */
+        function applyAndRenderPaymentFilters() {
+            const name = filterName.value;
+            const category = filterCategory.value;
+            const startDate = filterStartDate.value;
+            const endDate = filterEndDate.value;
+            
+            filteredPaymentsCache = paymentsCache.filter(payment => {
+                if (name && payment.name !== name) return false;
+                if (category && payment.category !== category) return false;
+                if (startDate && payment.date < startDate) return false;
+                if (endDate && payment.date > endDate) return false;
+                return true;
+            });
+            
+            renderPaymentsTable(filteredPaymentsCache);
+        }
+
+        /**
+         * Populates the filter <select> dropdowns.
+         */
+        function populatePaymentFilterSelects() {
+            // Populate Name Filter
+            const currentName = filterName.value;
+            filterName.innerHTML = '<option value="">All People</option>';
+            peopleCache.forEach(person => {
+                const option = document.createElement('option');
+                option.value = person.name;
+                option.textContent = person.name;
+                filterName.appendChild(option);
+            });
+            filterName.value = currentName; // Preserve selection
+
+            // Populate Category Filter
+            const currentCategory = filterCategory.value;
+            filterCategory.innerHTML = '<option value="">All Categories</option>';
+            categoriesCache.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.name;
+                option.textContent = category.name;
+                filterCategory.appendChild(option);
+            });
+            filterCategory.value = currentCategory; // Preserve selection
+        }
+
+        /**
+         * Resets all payment filters.
+         */
+        function resetPaymentFilters() {
+            filterName.value = '';
+            filterCategory.value = '';
+            filterStartDate.value = '';
+            filterEndDate.value = '';
+            applyAndRenderPaymentFilters();
+        }
+
+        /**
          * Renders the payments table.
+         * @param {Array} payments - The *filtered* array of payments to display.
          */
         function renderPaymentsTable(payments) {
             paymentsTableBody.innerHTML = '';
             
-            if (payments.length === 0) {
+            if (paymentsCache.length === 0) {
+                // No payments at all
                 noPaymentsMsg.classList.remove('hidden');
-            } else {
+                noFilteredPaymentsMsg.classList.add('hidden');
+            } else if (payments.length === 0) {
+                // Payments exist, but none match filters
                 noPaymentsMsg.classList.add('hidden');
+                noFilteredPaymentsMsg.classList.remove('hidden');
+            } else {
+                // Show filtered payments
+                noPaymentsMsg.classList.add('hidden');
+                noFilteredPaymentsMsg.classList.add('hidden');
+                
                 payments.forEach(payment => {
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-gray-700";
@@ -948,12 +1072,13 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">${payment.name}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">${payment.category || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">${formatCurrency(payment.amount)}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300 truncate max-w-xs">${payment.notes || ''}</td> <!-- NEW -->
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
                             <button data-id="${payment.id}" class="edit-payment-btn text-blue-400 hover:text-blue-300">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                             </button>
                             <button data-id="${payment.id}" class="delete-payment-btn text-red-500 hover:text-red-700">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                <svg class..."></svg>
                             </button>
                         </td>
                     `;
@@ -970,13 +1095,23 @@
             
             const paymentData = {
                 date: paymentDate.value,
-                name: paymentNameSelect.value,
-                category: paymentCategorySelect.value, // New
+                name: paymentNameInput.value,
+                category: paymentCategoryInput.value,
                 amount: parseFloat(paymentAmount.value),
+                notes: paymentNotes.value.trim(), // NEW
             };
             
+            // Validation
             if (!paymentData.date || !paymentData.name || !paymentData.category || isNaN(paymentData.amount) || paymentData.amount <= 0) {
                 showToast("Please fill in all fields (including category) with valid data.", true);
+                return;
+            }
+            if (!peopleCache.some(p => p.name === paymentData.name)) {
+                showToast("Person not found. Please add them from the 'Manage People' tab first.", true);
+                return;
+            }
+            if (!categoriesCache.some(c => c.name === paymentData.category)) {
+                showToast("Category not found. Please add it from the 'Manage Categories' tab first.", true);
                 return;
             }
             
@@ -984,10 +1119,12 @@
             
             try {
                 if (paymentId) {
+                    // Update existing payment
                     const paymentPath = `/artifacts/${appId}/users/${userId}/payments/${paymentId}`;
                     await updateDoc(doc(db, paymentPath), paymentData);
                     showToast("Payment updated!");
                 } else {
+                    // Add new payment
                     const paymentsPath = `/artifacts/${appId}/users/${userId}/payments`;
                     await addDoc(collection(db, paymentsPath), {
                         ...paymentData,
@@ -995,6 +1132,17 @@
                     });
                     showToast("Payment added!");
                 }
+                
+                // Handle template saving (New)
+                if (saveTemplateCheckbox.checked) {
+                    const templateName = templateNameInput.value.trim();
+                    if (!templateName) {
+                        showToast("Please enter a template name to save it.", true);
+                    } else {
+                        await savePaymentTemplate(templateName, paymentData);
+                    }
+                }
+                
                 resetPaymentForm();
                 
             } catch (error) {
@@ -1013,6 +1161,10 @@
             formTitle.textContent = "Add New Payment";
             submitPaymentBtn.textContent = "Add Payment";
             cancelEditBtn.classList.add('hidden');
+            saveTemplateCheckbox.checked = false;
+            templateNameWrapper.classList.add('hidden');
+            templateNameInput.value = '';
+            paymentNotes.value = ''; // NEW
         }
 
         /**
@@ -1026,9 +1178,10 @@
             }
             
             paymentDate.value = payment.date;
-            paymentNameSelect.value = payment.name;
-            paymentCategorySelect.value = payment.category; // New
+            paymentNameInput.value = payment.name;
+            paymentCategoryInput.value = payment.category;
             paymentAmount.value = payment.amount;
+            paymentNotes.value = payment.notes || ''; // NEW
             paymentIdHidden.value = paymentId;
             
             formTitle.textContent = "Edit Payment";
@@ -1054,13 +1207,124 @@
                 showToast("Failed to delete payment.", true);
             }
         }
-        
-        // --- Dashboard & Charts ---
+
+        // --- Payment Templates (NEW) ---
 
         /**
-         * Gets payments filtered by the current dashboard filter.
-         * @returns {Array} - The filtered array of payment objects.
+         * Saves or updates a payment template.
          */
+        async function savePaymentTemplate(templateName, paymentData) {
+            const existingTemplate = templatesCache.find(t => t.templateName.toLowerCase() === templateName.toLowerCase());
+            
+            const templateData = {
+                templateName: templateName,
+                name: paymentData.name,
+                category: paymentData.category,
+                amount: paymentData.amount,
+                notes: paymentData.notes // NEW
+            };
+            
+            try {
+                const templatesPath = `/artifacts/${appId}/users/${userId}/paymentTemplates`;
+                if (existingTemplate) {
+                    // Update existing template
+                    const templateDoc = doc(db, templatesPath, existingTemplate.id);
+                    await updateDoc(templateDoc, templateData);
+                    showToast(`Template "${templateName}" updated!`);
+                } else {
+                    // Add new template
+                    await addDoc(collection(db, templatesPath), { ...templateData, createdAt: serverTimestamp() });
+                    showToast(`Template "${templateName}" saved!`);
+                }
+            } catch (error) {
+                console.error("Error saving template:", error);
+                showToast("Failed to save template.", true);
+            }
+        }
+        
+        /**
+         * Renders the quick-add template buttons.
+         */
+        function renderTemplateButtons(templates) {
+            templateButtonsContainer.innerHTML = '';
+            if (templates.length === 0) {
+                noTemplatesMsg.classList.remove('hidden');
+                return;
+            }
+            
+            noTemplatesMsg.classList.add('hidden');
+            templates.forEach(template => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-150 text-sm';
+                button.textContent = template.templateName;
+                button.dataset.id = template.id;
+                button.addEventListener('click', () => populateFormFromTemplate(template.id));
+                templateButtonsContainer.appendChild(button);
+            });
+        }
+
+        /**
+         * Renders the "Manage Templates" list.
+         */
+        function renderTemplateList(templates) {
+            templateList.innerHTML = '';
+            if (templates.length === 0) {
+                noTemplatesListMsg.classList.remove('hidden');
+                return;
+            }
+            
+            noTemplatesListMsg.classList.add('hidden');
+            templates.forEach(template => {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center p-3 bg-gray-700 rounded-lg';
+                li.innerHTML = `
+                    <div>
+                        <span class="text-gray-100 font-semibold">${template.templateName}</span>
+                        <p class="text-sm text-gray-400">${template.name} | ${template.category} | ${formatCurrency(template.amount)}</p>
+                        <p class="text-sm text-gray-300 italic">${template.notes || 'No notes'}</p> <!-- NEW -->
+                    </div>
+                    <button data-id="${template.id}" class="delete-template-btn text-red-500 hover:text-red-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                `;
+                templateList.appendChild(li);
+            });
+        }
+
+        /**
+         * Populates the payment form from a saved template.
+         */
+        function populateFormFromTemplate(templateId) {
+            const template = templatesCache.find(t => t.id === templateId);
+            if (!template) return;
+            
+            paymentNameInput.value = template.name;
+            paymentCategoryInput.value = template.category;
+            paymentAmount.value = template.amount;
+            paymentNotes.value = template.notes || ''; // NEW
+            
+            // Scroll to form and show toast
+            paymentForm.scrollIntoView({ behavior: 'smooth' });
+            showToast(`Form populated from "${template.templateName}". Just set the date and add!`);
+        }
+
+        /**
+         * Deletes a payment template.
+         */
+        async function handleDeleteTemplate(templateId) {
+            try {
+                const templatePath = `/artifacts/${appId}/users/${userId}/paymentTemplates/${templateId}`;
+                await deleteDoc(doc(db, templatePath));
+                showToast("Template deleted.");
+            } catch (error) {
+                console.error("Error deleting template:", error);
+                showToast("Failed to delete template.", true);
+            }
+        }
+        
+        // --- Dashboard & Charts ---
+        // ... (All functions: getFilteredDashboardPayments, updateDashboard, renderPersonsChart, renderCategoriesChart, populateYearSelect, renderMonthlyChart, handleDashboardFilterClick are IDENTICAL to before) ...
         function getFilteredDashboardPayments() {
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -1083,10 +1347,6 @@
                     return paymentsCache;
             }
         }
-
-        /**
-         * Updates all dashboard elements based on the current filter.
-         */
         function updateDashboard() {
             // Get the filtered list of payments for the dashboard
             const filteredPayments = getFilteredDashboardPayments();
@@ -1105,11 +1365,6 @@
             // 4. Render monthly chart (uses its own year filter, not dashboard filter)
             renderMonthlyChart();
         }
-        
-        /**
-         * Calculates and renders the "Spending by Person" chart based on filtered payments.
-         * @param {Array} payments - The filtered array of payment objects to display.
-         */
         function renderPersonsChart(payments) {
             const ctx = document.getElementById('persons-chart').getContext('2d');
             
@@ -1152,11 +1407,6 @@
                 }
             });
         }
-
-        /**
-         * Renders the "Spending by Category" pie chart.
-         * @param {Array} payments - The filtered array of payment objects to display.
-         */
         function renderCategoriesChart(payments) {
             const ctx = document.getElementById('categories-chart').getContext('2d');
             
@@ -1211,11 +1461,6 @@
                 }
             });
         }
-        
-        /**
-         * Populates the year dropdown for the monthly chart.
-         * @param {Array} payments - Array of payment objects (uses ALL payments).
-         */
         function populateYearSelect(payments) {
             // ... (same as before)
             if (payments.length === 0) return;
@@ -1235,10 +1480,6 @@
                 monthlyReportYearSelect.value = years[0];
             }
         }
-
-        /**
-         * Calculates and renders the "Monthly Report" line chart.
-         */
         function renderMonthlyChart() {
             // ... (same as before, but ensure local date parsing)
             const ctx = document.getElementById('monthly-chart').getContext('2d');
@@ -1285,11 +1526,6 @@
                 }
             });
         }
-        
-        /**
-         * Handles clicks on the dashboard filter buttons.
-         * @param {Event} e - The click event.
-         */
         function handleDashboardFilterClick(e) {
             const clickedFilter = e.currentTarget;
             dashboardDateFilter = clickedFilter.dataset.filter;
@@ -1305,56 +1541,18 @@
         // --- Export to CSV ---
 
         /**
-         * Creates and downloads a CSV file.
-         * @param {string} filterType - 'week', 'month', or 'all'.
+         * Creates and downloads a CSV file from the *filtered* payments list.
          */
-        function handleExportCSV(filterType) {
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            
-            let filteredData = [];
-            let filename = 'payments_export.csv';
-
-            switch (filterType) {
-                case 'week':
-                    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday
-                    const startOfWeek = new Date(today.setDate(today.getDate() - dayOfWeek));
-                    const endOfWeek = new Date(startOfWeek);
-                    endOfWeek.setDate(endOfWeek.getDate() + 6);
-                    
-                    filteredData = paymentsCache.filter(p => {
-                        const pDate = new Date(p.date + 'T00:00:00');
-                        return pDate >= startOfWeek && pDate <= endOfWeek;
-                    });
-                    filename = `payments_week_${startOfWeek.toISOString().split('T')[0]}.csv`;
-                    break;
-
-                case 'month':
-                    const currentYear = today.getFullYear();
-                    const currentMonth = today.getMonth();
-                    filteredData = paymentsCache.filter(p => {
-                        const pDate = new Date(p.date + 'T00:00:00');
-                        return pDate.getFullYear() === currentYear && pDate.getMonth() === currentMonth;
-                    });
-                    filename = `payments_month_${currentYear}-${String(currentMonth + 1).padStart(2, '0')}.csv`;
-                    break;
-                
-                case 'all':
-                default:
-                    filteredData = paymentsCache;
-                    filename = 'payments_all.csv';
-                    break;
-            }
-
-            if (filteredData.length === 0) {
-                showToast("No data to export for this period.", true);
+        function handleExportFilteredCSV() {
+            if (filteredPaymentsCache.length === 0) {
+                showToast("No filtered data to export.", true);
                 return;
             }
 
-            // Generate CSV content
-            const header = `"Date","Name","Category","Amount"\n`;
-            const rows = filteredData.map(p => 
-                `"${p.date}","${p.name}","${p.category || 'N/A'}","${p.amount}"`
+            // Generate CSV content from the filtered cache
+            const header = `"Date","Name","Category","Amount","Notes"\n`; // NEW
+            const rows = filteredPaymentsCache.map(p => 
+                `"${p.date}","${p.name}","${p.category || 'N/A'}","${p.amount}","${p.notes || ''}"` // NEW
             ).join('\n');
             const csvContent = header + rows;
 
@@ -1363,12 +1561,12 @@
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
-            link.setAttribute('download', filename);
+            link.setAttribute('download', 'filtered_payments_export.csv');
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            showToast("Export successful!");
+            showToast("Filtered export successful!");
         }
 
         // --- Event Listeners ---
@@ -1394,11 +1592,19 @@
         paymentForm.addEventListener('submit', handleSubmitPayment);
         cancelEditBtn.addEventListener('click', resetPaymentForm);
         monthlyReportYearSelect.addEventListener('change', renderMonthlyChart);
+        saveTemplateCheckbox.addEventListener('change', () => {
+            templateNameWrapper.classList.toggle('hidden', !saveTemplateCheckbox.checked);
+        });
+
+        // --- Payment Filter Listeners (New) ---
+        filterName.addEventListener('change', applyAndRenderPaymentFilters);
+        filterCategory.addEventListener('change', applyAndRenderPaymentFilters);
+        filterStartDate.addEventListener('change', applyAndRenderPaymentFilters);
+        filterEndDate.addEventListener('change', applyAndRenderPaymentFilters);
+        filterResetBtn.addEventListener('click', resetPaymentFilters);
 
         // --- Export Listeners ---
-        exportWeekBtn.addEventListener('click', () => handleExportCSV('week'));
-        exportMonthBtn.addEventListener('click', () => handleExportCSV('month'));
-        exportAllBtn.addEventListener('click', () => handleExportCSV('all'));
+        exportFilteredBtn.addEventListener('click', handleExportFilteredCSV); // Changed
 
         // --- Dynamic Table/List Listeners (Event Delegation) ---
         
@@ -1448,6 +1654,14 @@
             if (editBtn) {
                 const id = editBtn.dataset.id;
                 handleEditPayment(id);
+            }
+        });
+
+        // Listener for "Templates" list (New)
+        templateList.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.delete-template-btn');
+            if (deleteBtn) {
+                handleDeleteTemplate(deleteBtn.dataset.id);
             }
         });
 
