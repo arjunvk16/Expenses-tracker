@@ -24,6 +24,11 @@
             color: #3b82f6;
             font-weight: 600;
         }
+        /* Filter button highlighting */
+        .filter-btn.active {
+            background-color: #3b82f6; /* blue-500 */
+            color: #ffffff;
+        }
         /* Custom scrollbar for dark mode */
         ::-webkit-scrollbar {
             width: 8px;
@@ -86,37 +91,54 @@
                     <button data-tab="dashboard" class="tab-btn active px-6 py-3 text-gray-400 hover:text-blue-400">Dashboard</button>
                     <button data-tab="payments" class="tab-btn px-6 py-3 text-gray-400 hover:text-blue-400">Payments</button>
                     <button data-tab="people" class="tab-btn px-6 py-3 text-gray-400 hover:text-blue-400">Manage People</button>
+                    <button data-tab="categories" class="tab-btn px-6 py-3 text-gray-400 hover:text-blue-400">Manage Categories</button>
                 </div>
             </nav>
 
             <!-- Tab Content -->
             <div>
                 <!-- Dashboard Tab -->
-                <section id="dashboard-tab" class="tab-content grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Total Spending -->
-                     <div class="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-1">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-100">Total Spending</h3>
-                        <p class="text-4xl font-bold text-blue-400" id="total-spending">...</p>
-                    </div>
-                    
-                    <!-- Spending by Person -->
-                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-2">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-100">Spending by Person</h3>
-                        <!-- Wrapper DIV to constrain chart height -->
-                        <div class="relative h-80">
-                            <canvas id="persons-chart"></canvas>
-                        </div>
+                <section id="dashboard-tab" class="tab-content space-y-6">
+                    <!-- Dashboard Filters -->
+                    <div class="flex justify-center space-x-2 bg-gray-800 p-2 rounded-lg">
+                        <button data-filter="month" class="filter-btn px-4 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700">This Month</button>
+                        <button data-filter="year" class="filter-btn px-4 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700">This Year</button>
+                        <button data-filter="all" class="filter-btn active px-4 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700">All Time</button>
                     </div>
 
-                    <!-- Monthly Report -->
-                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-3">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-100">Monthly Report</h3>
-                        <select id="monthly-report-year" class="mb-4 w-full md:w-auto px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
-                            <!-- Years will be populated by JS -->
-                        </select>
-                        <!-- Wrapper DIV to constrain chart height -->
-                        <div class="relative h-96">
-                            <canvas id="monthly-chart"></canvas>
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Total Spending -->
+                        <div class="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-1">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-100">Total Spending</h3>
+                            <p class="text-4xl font-bold text-blue-400" id="total-spending">...</p>
+                        </div>
+                        
+                        <!-- Spending by Person -->
+                        <div class="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-2">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-100">Spending by Person</h3>
+                            <div class="relative h-80">
+                                <canvas id="persons-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Spending by Category -->
+                        <div class="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-2">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-100">Spending by Category</h3>
+                            <div class="relative h-80">
+                                <canvas id="categories-chart"></canvas>
+                            </div>
+                            <p id="no-category-data-msg" class="text-center text-gray-400 hidden">No category data for this period.</p>
+                        </div>
+
+                        <!-- Monthly Report -->
+                        <div class="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-3">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-100">Monthly Report</h3>
+                            <select id="monthly-report-year" class="mb-4 w-full md:w-auto px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                                <!-- Years will be populated by JS -->
+                            </select>
+                            <div class="relative h-96">
+                                <canvas id="monthly-chart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -126,7 +148,7 @@
                     <!-- Add/Edit Payment Form -->
                     <form id="payment-form" class="bg-gray-800 p-6 rounded-lg shadow-lg">
                         <h3 id="form-title" class="text-xl font-semibold mb-4 text-gray-100">Add New Payment</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div>
                                 <label for="payment-date" class="block text-sm font-medium text-gray-300">Date</label>
                                 <input type="date" id="payment-date" required class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400">
@@ -136,6 +158,13 @@
                                 <select id="payment-name" required class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
                                     <option value="">Select a person</option>
                                     <!-- Names populated by JS -->
+                                </select>
+                            </div>
+                            <div>
+                                <label for="payment-category" class="block text-sm font-medium text-gray-300">Category</label>
+                                <select id="payment-category" required class="mt-1 w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                                    <option value="">Select a category</option>
+                                    <!-- Categories populated by JS -->
                                 </select>
                             </div>
                             <div>
@@ -150,6 +179,16 @@
                         <input type="hidden" id="payment-id-hidden">
                     </form>
 
+                    <!-- Export Data -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h3 class="text-xl font-semibold text-gray-100 mb-4">Export Data (CSV)</h3>
+                        <div class="flex flex-wrap gap-4">
+                            <button id="export-week-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition duration-150">Export This Week</button>
+                            <button id="export-month-btn" class="bg-green-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-green-700 transition duration-150">Export This Month</button>
+                            <button id="export-all-btn" class="bg-gray-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-gray-700 transition duration-150">Export All</button>
+                        </div>
+                    </div>
+
                     <!-- All Payments Table -->
                     <div class="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
                         <h3 class="text-xl font-semibold text-gray-100 p-6">All Payments</h3>
@@ -159,6 +198,7 @@
                                     <tr>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Name</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Category</th>
                                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Amount</th>
                                         <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Actions</th>
                                     </tr>
@@ -197,6 +237,33 @@
                         <p id="no-people-msg" class="text-center text-gray-400 hidden">No people added yet.</p>
                     </div>
                 </section>
+
+                <!-- Manage Categories Tab -->
+                <section id="categories-tab" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Add/Edit Category Form -->
+                    <form id="category-form" class="bg-gray-800 p-6 rounded-lg shadow-lg h-fit">
+                        <h3 id="category-form-title" class="text-xl font-semibold mb-4 text-gray-100">Add New Category</h3>
+                        <div class="flex space-x-4">
+                            <input type="text" id="category-name" placeholder="Enter new category" required class="flex-1 px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400">
+                            <button type="submit" id="submit-category-btn" class="bg-green-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-green-700 transition duration-150">Add</button>
+                        </div>
+                         <div class="mt-4">
+                             <button type="button" id="cancel-category-edit-btn" class="hidden w-full bg-gray-500 text-white px-6 py-2 rounded-lg shadow-md hover:bg-gray-600 transition duration-150">Cancel Edit</button>
+                        </div>
+                        <input type="hidden" id="category-id-hidden">
+                        <input type="hidden" id="category-old-name-hidden">
+                    </form>
+
+                    <!-- Category List -->
+                    <div class="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-100">Category List</h3>
+                        <ul id="category-list" class="space-y-3">
+                            <!-- List populated by JS -->
+                        </ul>
+                        <p id="no-categories-msg" class="text-center text-gray-400 hidden">No categories added yet.</p>
+                    </div>
+                </section>
+
             </div>
         </main>
     </div>
@@ -221,17 +288,17 @@
         let userId = null;
         let unsubscribePayments = null;
         let unsubscribePeople = null;
+        let unsubscribeCategories = null; // New
         let paymentsCache = [];
         let peopleCache = [];
+        let categoriesCache = []; // New
         let personsChartInstance = null;
         let monthlyChartInstance = null;
+        let categoriesChartInstance = null; // New
+        let dashboardDateFilter = 'all'; // New: 'all', 'year', 'month'
         
         // --- CRITICAL FIX ---
-        // We MUST hard-code the appId to match the hard-coded firebaseConfig.
-        // This ensures the database paths (e.g., /artifacts/my-chain-reaction-game/...)
-        // are correct for the project we are connected to.
         const appId = 'my-chain-reaction-game';
-        // --- END FIX ---
         
         // --- UI Element Globals ---
         // Auth
@@ -256,6 +323,7 @@
         const formTitle = document.getElementById('form-title');
         const paymentDate = document.getElementById('payment-date');
         const paymentNameSelect = document.getElementById('payment-name');
+        const paymentCategorySelect = document.getElementById('payment-category'); // New
         const paymentAmount = document.getElementById('payment-amount');
         const submitPaymentBtn = document.getElementById('submit-payment-btn');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
@@ -273,34 +341,39 @@
         const cancelPersonEditBtn = document.getElementById('cancel-person-edit-btn');
         const personIdHidden = document.getElementById('person-id-hidden');
         const personOldNameHidden = document.getElementById('person-old-name-hidden');
+
+        // Categories (New)
+        const categoryForm = document.getElementById('category-form');
+        const categoryNameInput = document.getElementById('category-name');
+        const categoryList = document.getElementById('category-list');
+        const noCategoriesMsg = document.getElementById('no-categories-msg');
+        const categoryFormTitle = document.getElementById('category-form-title');
+        const submitCategoryBtn = document.getElementById('submit-category-btn');
+        const cancelCategoryEditBtn = document.getElementById('cancel-category-edit-btn');
+        const categoryIdHidden = document.getElementById('category-id-hidden');
+        const categoryOldNameHidden = document.getElementById('category-old-name-hidden');
         
         // Dashboard
+        const dashboardFilterButtons = document.querySelectorAll('.filter-btn'); // New
         const totalSpendingEl = document.getElementById('total-spending');
         const monthlyReportYearSelect = document.getElementById('monthly-report-year');
+        const noCategoryDataMsg = document.getElementById('no-category-data-msg');
+
+        // Export
+        const exportWeekBtn = document.getElementById('export-week-btn');
+        const exportMonthBtn = document.getElementById('export-month-btn');
+        const exportAllBtn = document.getElementById('export-all-btn');
         
         // --- Chart Config ---
-        // Predefined colors for the person chart
         const CHART_COLORS = [
-            '#3b82f6', // blue-500
-            '#10b981', // emerald-500
-            '#ef4444', // red-500
-            '#f97316', // orange-500
-            '#a855f7', // purple-500
-            '#eab308', // yellow-500
-            '#ec4899', // pink-500
-            '#6366f1', // indigo-500
-            '#06b6d4', // cyan-500
-            '#f43f5e', // rose-500
+            '#3b82f6', '#10b981', '#ef4444', '#f97316', '#a855f7', '#eab308', 
+            '#ec4899', '#6366f1', '#06b6d4', '#f43f5e', '#84cc16', '#22c55e'
         ];
-        
-        // Set Chart.js defaults for dark mode
         Chart.defaults.color = '#e5e7eb'; // gray-200
         Chart.defaults.borderColor = '#4b5563'; // gray-600
 
         /**
          * Utility: Show toast message
-         * @param {string} message - The message to display.
-         * @param {boolean} [isError=false] - If true, show error colors.
          */
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
@@ -320,8 +393,6 @@
 
         /**
          * Utility: Format number as INR currency
-         * @param {number} amount - The number to format.
-         * @returns {string} - Formatted currency string (e.g., ₹1,234.50).
          */
         function formatCurrency(amount) {
             return new Intl.NumberFormat('en-IN', {
@@ -366,10 +437,8 @@
                     authSection.classList.add('hidden');
                     appSection.classList.remove('hidden');
                     
-                    // Set default date for payment form
                     paymentDate.value = new Date().toISOString().split('T')[0];
                     
-                    // Attach Firestore listeners
                     attachFirestoreListeners();
                     
                 } else {
@@ -382,13 +451,13 @@
                     authSection.classList.remove('hidden');
                     appSection.classList.add('hidden');
                     
-                    // Detach listeners if they exist
                     if (unsubscribePayments) unsubscribePayments();
                     if (unsubscribePeople) unsubscribePeople();
+                    if (unsubscribeCategories) unsubscribeCategories(); // New
                     
-                    // Clear local caches
                     paymentsCache = [];
                     peopleCache = [];
+                    categoriesCache = []; // New
                 }
                 authLoading.classList.add('hidden');
             });
@@ -398,6 +467,7 @@
          * Handles user login.
          */
         async function handleLogin() {
+            // ... (same as before)
             const email = emailInput.value;
             const password = passwordInput.value;
             if (!email || !password) {
@@ -408,7 +478,6 @@
             
             try {
                 await signInWithEmailAndPassword(auth, email, password);
-                // Auth listener will handle the rest
             } catch (error) {
                 console.error("Login failed:", error.message);
                 authError.textContent = `Login failed: ${error.message}`;
@@ -419,6 +488,7 @@
          * Handles user signup.
          */
         async function handleSignup() {
+            // ... (same as before)
             const email = emailInput.value;
             const password = passwordInput.value;
             if (!email || !password) {
@@ -433,7 +503,6 @@
 
             try {
                 await createUserWithEmailAndPassword(auth, email, password);
-                // Auth listener will handle the rest
             } catch (error) {
                 console.error("Signup failed:", error.message);
                 authError.textContent = `Signup failed: ${error.message}`;
@@ -444,9 +513,9 @@
          * Handles user logout.
          */
         async function handleLogout() {
+            // ... (same as before)
             try {
                 await signOut(auth);
-                // Auth listener will handle the rest
             } catch (error) {
                 console.error("Logout failed:", error);
                 showToast("Logout failed. Please try again.", true);
@@ -457,17 +526,15 @@
 
         /**
          * Handles tab switching.
-         * @param {Event} e - The click event.
          */
         function handleTabClick(e) {
+            // ... (same as before)
             const clickedTab = e.currentTarget;
             const tabName = clickedTab.dataset.tab;
 
-            // Update button styles
             tabButtons.forEach(btn => btn.classList.remove('active'));
             clickedTab.classList.add('active');
 
-            // Show/hide content
             tabContents.forEach(content => {
                 if (content.id === `${tabName}-tab`) {
                     content.classList.remove('hidden');
@@ -476,23 +543,22 @@
                 }
             });
             
-            // Re-render charts if dashboard is clicked and data is ready
             if (tabName === 'dashboard' && paymentsCache.length > 0) {
-                 updateCharts();
+                 updateDashboard();
             }
         }
 
         // --- Firestore & Data Logic ---
 
         /**
-         * Attaches real-time listeners for payments and people.
+         * Attaches real-time listeners for payments, people, and categories.
          */
         function attachFirestoreListeners() {
             if (!userId) return;
             
-            // Detach old listeners if they exist
             if (unsubscribePayments) unsubscribePayments();
             if (unsubscribePeople) unsubscribePeople();
+            if (unsubscribeCategories) unsubscribeCategories();
 
             // --- People Listener ---
             const peoplePath = `/artifacts/${appId}/users/${userId}/persons`;
@@ -501,17 +567,26 @@
             unsubscribePeople = onSnapshot(peopleQuery, (snapshot) => {
                 console.log("People listener updated.");
                 peopleCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                // Sort by name
                 peopleCache.sort((a, b) => a.name.localeCompare(b.name));
                 
                 renderPeopleList(peopleCache);
                 updatePaymentNameSelect(peopleCache);
                 
-            }, (error) => {
-                console.error("Error in people listener:", error);
-                showToast("Error loading people data.", true);
-            });
+            }, (error) => console.error("Error in people listener:", error));
+
+            // --- Categories Listener (New) ---
+            const categoriesPath = `/artifacts/${appId}/users/${userId}/categories`;
+            const categoriesQuery = query(collection(db, categoriesPath));
+            
+            unsubscribeCategories = onSnapshot(categoriesQuery, (snapshot) => {
+                console.log("Categories listener updated.");
+                categoriesCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                categoriesCache.sort((a, b) => a.name.localeCompare(b.name));
+                
+                renderCategoriesList(categoriesCache);
+                updatePaymentCategorySelect(categoriesCache);
+                
+            }, (error) => console.error("Error in categories listener:", error));
 
             // --- Payments Listener ---
             const paymentsPath = `/artifacts/${appId}/users/${userId}/payments`;
@@ -520,27 +595,22 @@
             unsubscribePayments = onSnapshot(paymentsQuery, (snapshot) => {
                 console.log("Payments listener updated.");
                 paymentsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                // Sort by date, newest first
                 paymentsCache.sort((a, b) => new Date(b.date) - new Date(a.date));
                 
                 renderPaymentsTable(paymentsCache);
-                updateDashboard(paymentsCache);
+                updateDashboard(); // Update dashboard with new data
                 
-            }, (error) => {
-                console.error("Error in payments listener:", error);
-                showToast("Error loading payments data.", true);
-            });
+            }, (error) => console.error("Error in payments listener:", error));
         }
 
         // --- People Management ---
-
+        // ... (All functions: renderPeopleList, updatePaymentNameSelect, handleSubmitPerson, handleEditPerson, resetPersonForm, handleDeletePerson are IDENTICAL to before) ...
+        
         /**
          * Renders the list of people in the "Manage People" tab.
-         * @param {Array} people - Array of person objects.
          */
         function renderPeopleList(people) {
-            peopleList.innerHTML = ''; // Clear list
+            peopleList.innerHTML = '';
             
             if (people.length === 0) {
                 noPeopleMsg.classList.remove('hidden');
@@ -567,11 +637,10 @@
 
         /**
          * Populates the <select> dropdown in the payment form.
-         * @param {Array} people - Array of person objects.
          */
         function updatePaymentNameSelect(people) {
             const currentVal = paymentNameSelect.value;
-            paymentNameSelect.innerHTML = '<option value="">Select a person</option>'; // Clear and add default
+            paymentNameSelect.innerHTML = '<option value="">Select a person</option>';
             
             people.forEach(person => {
                 const option = document.createElement('option');
@@ -580,7 +649,6 @@
                 paymentNameSelect.appendChild(option);
             });
             
-            // Try to preserve selection if it still exists
             if (people.some(p => p.name === currentVal)) {
                 paymentNameSelect.value = currentVal;
             }
@@ -588,7 +656,6 @@
         
         /**
          * Handles the submission of the "Add Person" form.
-         * @param {Event} e - The form submit event.
          */
         async function handleSubmitPerson(e) {
             e.preventDefault();
@@ -598,39 +665,28 @@
             const personId = personIdHidden.value;
             const oldName = personOldNameHidden.value;
             
-            // Check for duplicates (case-insensitive)
             const existingPerson = peopleCache.find(p => p.name.toLowerCase() === newName.toLowerCase());
             
-            // Check if in edit mode
             if (personId) {
-                // In edit mode
                 if (existingPerson && existingPerson.id !== personId) {
                      showToast("This name is already used by another person.", true);
                      return;
                 }
                 
-                // --- Atomic update ---
-                // Update the person doc AND all payment docs that used the old name
                 try {
                     const batch = writeBatch(db);
-                    
-                    // 1. Update the person document
                     const personDocPath = `/artifacts/${appId}/users/${userId}/persons/${personId}`;
                     batch.update(doc(db, personDocPath), { name: newName });
                     
-                    // 2. Find and update all associated payments
                     const paymentsPath = `/artifacts/${appId}/users/${userId}/payments`;
                     const paymentsQuery = query(collection(db, paymentsPath), where("name", "==", oldName));
                     
                     const querySnapshot = await getDocs(paymentsQuery);
                     querySnapshot.forEach((paymentDoc) => {
-                        // Update the 'name' field on each payment
                         batch.update(paymentDoc.ref, { name: newName });
                     });
                     
-                    // 3. Commit the batch
                     await batch.commit();
-                    
                     showToast("Person and all associated payments updated!");
                     resetPersonForm();
                     
@@ -640,7 +696,6 @@
                 }
                 
             } else {
-                // In add mode
                 if (existingPerson) {
                     showToast("This person already exists.", true);
                     return;
@@ -649,10 +704,7 @@
                 try {
                     const personsPath = `/artifacts/${appId}/users/${userId}/persons`;
                     const personsRef = collection(db, personsPath);
-                    await addDoc(personsRef, {
-                        name: newName,
-                        createdAt: serverTimestamp()
-                    });
+                    await addDoc(personsRef, { name: newName, createdAt: serverTimestamp() });
                     
                     personNameInput.value = '';
                     showToast("Person added successfully!");
@@ -666,18 +718,14 @@
 
         /**
          * Populates the person form for editing.
-         * @param {string} personId - The Firestore document ID of the person.
-         * @param {string} personName - The current name of the person.
          */
         function handleEditPerson(personId, personName) {
             personNameInput.value = personName;
             personIdHidden.value = personId;
             personOldNameHidden.value = personName;
-            
             personFormTitle.textContent = "Edit Person's Name";
             submitPersonBtn.textContent = "Update Name";
             cancelPersonEditBtn.classList.remove('hidden');
-            
             personForm.scrollIntoView({ behavior: 'smooth' });
             personNameInput.focus();
         }
@@ -696,24 +744,20 @@
 
         /**
          * Handles deleting a person.
-         * @param {string} personId - The Firestore document ID of the person.
-         * @param {string} personName - The name of the person.
          */
         async function handleDeletePerson(personId, personName) {
-            // Check if this person has any payments
             const hasPayments = paymentsCache.some(p => p.name === personName);
             
             if (hasPayments) {
-                showToast("Cannot delete person. They are associated with payments. Please delete or re-assign their payments first.", true);
+                showToast("Cannot delete person. They are associated with payments.", true);
                 return;
             }
             
-            // If no payments, safe to delete
             try {
                 const personPath = `/artifacts/${appId}/users/${userId}/persons/${personId}`;
                 await deleteDoc(doc(db, personPath));
                 showToast("Person deleted.");
-                resetPersonForm(); // In case we were editing this one
+                resetPersonForm();
                 
             } catch (error) {
                 console.error("Error deleting person:", error);
@@ -721,14 +765,176 @@
             }
         }
 
+        // --- Category Management (New) ---
+
+        /**
+         * Renders the list of categories in the "Manage Categories" tab.
+         */
+        function renderCategoriesList(categories) {
+            categoryList.innerHTML = '';
+            
+            if (categories.length === 0) {
+                noCategoriesMsg.classList.remove('hidden');
+            } else {
+                noCategoriesMsg.classList.add('hidden');
+                categories.forEach(category => {
+                    const li = document.createElement('li');
+                    li.className = 'flex justify-between items-center p-3 bg-gray-700 rounded-lg';
+                    li.innerHTML = `
+                        <span class="text-gray-100">${category.name}</span>
+                        <div class="flex space-x-2">
+                            <button data-id="${category.id}" data-name="${category.name}" class="edit-category-btn text-blue-400 hover:text-blue-300">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            </button>
+                            <button data-id="${category.id}" data-name="${category.name}" class="delete-category-btn text-red-500 hover:text-red-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    `;
+                    categoryList.appendChild(li);
+                });
+            }
+        }
+
+        /**
+         * Populates the Category <select> dropdown in the payment form.
+         */
+        function updatePaymentCategorySelect(categories) {
+            const currentVal = paymentCategorySelect.value;
+            paymentCategorySelect.innerHTML = '<option value="">Select a category</option>';
+            
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.name;
+                option.textContent = category.name;
+                paymentCategorySelect.appendChild(option);
+            });
+            
+            if (categories.some(c => c.name === currentVal)) {
+                paymentCategorySelect.value = currentVal;
+            }
+        }
+
+        /**
+         * Handles the submission of the "Add/Edit Category" form.
+         */
+        async function handleSubmitCategory(e) {
+            e.preventDefault();
+            const newName = categoryNameInput.value.trim();
+            if (!newName) return;
+
+            const categoryId = categoryIdHidden.value;
+            const oldName = categoryOldNameHidden.value;
+            
+            const existingCategory = categoriesCache.find(c => c.name.toLowerCase() === newName.toLowerCase());
+            
+            if (categoryId) {
+                // Edit Mode
+                if (existingCategory && existingCategory.id !== categoryId) {
+                     showToast("This category name is already used.", true);
+                     return;
+                }
+                
+                try {
+                    const batch = writeBatch(db);
+                    const categoryDocPath = `/artifacts/${appId}/users/${userId}/categories/${categoryId}`;
+                    batch.update(doc(db, categoryDocPath), { name: newName });
+                    
+                    const paymentsPath = `/artifacts/${appId}/users/${userId}/payments`;
+                    const paymentsQuery = query(collection(db, paymentsPath), where("category", "==", oldName));
+                    
+                    const querySnapshot = await getDocs(paymentsQuery);
+                    querySnapshot.forEach((paymentDoc) => {
+                        batch.update(paymentDoc.ref, { category: newName });
+                    });
+                    
+                    await batch.commit();
+                    showToast("Category and all associated payments updated!");
+                    resetCategoryForm();
+                    
+                } catch (error) {
+                    console.error("Error updating category and payments:", error);
+                    showToast("Failed to update category.", true);
+                }
+                
+            } else {
+                // Add Mode
+                if (existingCategory) {
+                    showToast("This category already exists.", true);
+                    return;
+                }
+
+                try {
+                    const categoriesPath = `/artifacts/${appId}/users/${userId}/categories`;
+                    await addDoc(collection(db, categoriesPath), { name: newName, createdAt: serverTimestamp() });
+                    
+                    categoryNameInput.value = '';
+                    showToast("Category added successfully!");
+                    
+                } catch (error) {
+                    console.error("Error adding category:", error);
+                    showToast("Failed to add category.", true);
+                }
+            }
+        }
+
+        /**
+         * Populates the category form for editing.
+         */
+        function handleEditCategory(categoryId, categoryName) {
+            categoryNameInput.value = categoryName;
+            categoryIdHidden.value = categoryId;
+            categoryOldNameHidden.value = categoryName;
+            categoryFormTitle.textContent = "Edit Category Name";
+            submitCategoryBtn.textContent = "Update Name";
+            cancelCategoryEditBtn.classList.remove('hidden');
+            categoryForm.scrollIntoView({ behavior: 'smooth' });
+            categoryNameInput.focus();
+        }
+
+        /**
+         * Resets the category form to its default (add) state.
+         */
+        function resetCategoryForm() {
+            categoryForm.reset();
+            categoryIdHidden.value = '';
+            categoryOldNameHidden.value = '';
+            categoryFormTitle.textContent = 'Add New Category';
+            submitCategoryBtn.textContent = 'Add';
+            cancelCategoryEditBtn.classList.add('hidden');
+        }
+
+        /**
+         * Handles deleting a category.
+         */
+        async function handleDeleteCategory(categoryId, categoryName) {
+            const hasPayments = paymentsCache.some(p => p.category === categoryName);
+            
+            if (hasPayments) {
+                showToast("Cannot delete category. It is associated with payments.", true);
+                return;
+            }
+            
+            try {
+                const categoryPath = `/artifacts/${appId}/users/${userId}/categories/${categoryId}`;
+                await deleteDoc(doc(db, categoryPath));
+                showToast("Category deleted.");
+                resetCategoryForm();
+                
+            } catch (error) {
+                console.error("Error deleting category:", error);
+                showToast("Failed to delete category.", true);
+            }
+        }
+
+
         // --- Payment Management ---
 
         /**
          * Renders the payments table.
-         * @param {Array} payments - Array of payment objects.
          */
         function renderPaymentsTable(payments) {
-            paymentsTableBody.innerHTML = ''; // Clear table
+            paymentsTableBody.innerHTML = '';
             
             if (payments.length === 0) {
                 noPaymentsMsg.classList.remove('hidden');
@@ -740,6 +946,7 @@
                     tr.innerHTML = `
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">${payment.date}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">${payment.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">${payment.category || 'N/A'}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-100">${formatCurrency(payment.amount)}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right space-x-2">
                             <button data-id="${payment.id}" class="edit-payment-btn text-blue-400 hover:text-blue-300">
@@ -757,7 +964,6 @@
 
         /**
          * Handles submission of the Add/Edit Payment form.
-         * @param {Event} e - The form submit event.
          */
         async function handleSubmitPayment(e) {
             e.preventDefault();
@@ -765,11 +971,12 @@
             const paymentData = {
                 date: paymentDate.value,
                 name: paymentNameSelect.value,
+                category: paymentCategorySelect.value, // New
                 amount: parseFloat(paymentAmount.value),
             };
             
-            if (!paymentData.date || !paymentData.name || isNaN(paymentData.amount) || paymentData.amount <= 0) {
-                showToast("Please fill in all fields with valid data.", true);
+            if (!paymentData.date || !paymentData.name || !paymentData.category || isNaN(paymentData.amount) || paymentData.amount <= 0) {
+                showToast("Please fill in all fields (including category) with valid data.", true);
                 return;
             }
             
@@ -777,12 +984,10 @@
             
             try {
                 if (paymentId) {
-                    // Update existing payment
                     const paymentPath = `/artifacts/${appId}/users/${userId}/payments/${paymentId}`;
                     await updateDoc(doc(db, paymentPath), paymentData);
                     showToast("Payment updated!");
                 } else {
-                    // Add new payment
                     const paymentsPath = `/artifacts/${appId}/users/${userId}/payments`;
                     await addDoc(collection(db, paymentsPath), {
                         ...paymentData,
@@ -804,7 +1009,7 @@
         function resetPaymentForm() {
             paymentForm.reset();
             paymentIdHidden.value = '';
-            paymentDate.value = new Date().toISOString().split('T')[0]; // Reset date to today
+            paymentDate.value = new Date().toISOString().split('T')[0];
             formTitle.textContent = "Add New Payment";
             submitPaymentBtn.textContent = "Add Payment";
             cancelEditBtn.classList.add('hidden');
@@ -812,41 +1017,37 @@
 
         /**
          * Populates the payment form for editing.
-         * @param {string} paymentId - The Firestore document ID of the payment.
          */
         function handleEditPayment(paymentId) {
-            // Find the payment in our local cache
             const payment = paymentsCache.find(p => p.id === paymentId);
             if (!payment) {
                 showToast("Could not find payment to edit.", true);
                 return;
             }
             
-            // Populate the form
             paymentDate.value = payment.date;
             paymentNameSelect.value = payment.name;
+            paymentCategorySelect.value = payment.category; // New
             paymentAmount.value = payment.amount;
             paymentIdHidden.value = paymentId;
             
-            // Update UI to "edit mode"
             formTitle.textContent = "Edit Payment";
             submitPaymentBtn.textContent = "Update Payment";
             cancelEditBtn.classList.remove('hidden');
             
-            // Scroll to the form
             paymentForm.scrollIntoView({ behavior: 'smooth' });
         }
 
         /**
          * Handles deleting a payment.
-         * @param {string} paymentId - The Firestore document ID of the payment.
         */
         async function handleDeletePayment(paymentId) {
+            // ... (same as before)
             try {
                 const paymentPath = `/artifacts/${appId}/users/${userId}/payments/${paymentId}`;
                 await deleteDoc(doc(db, paymentPath));
                 showToast("Payment deleted.");
-                resetPaymentForm(); // In case we were editing this one
+                resetPaymentForm();
                 
             } catch (error) {
                 console.error("Error deleting payment:", error);
@@ -857,37 +1058,62 @@
         // --- Dashboard & Charts ---
 
         /**
-         * Updates all dashboard elements.
-         * @param {Array} payments - Array of payment objects.
+         * Gets payments filtered by the current dashboard filter.
+         * @returns {Array} - The filtered array of payment objects.
          */
-        function updateDashboard(payments) {
-            // 1. Calculate and render total spending
-            const totalSpending = payments.reduce((sum, p) => sum + p.amount, 0);
-            totalSpendingEl.textContent = formatCurrency(totalSpending);
-            
-            // 2. Populate year select for monthly report
-            populateYearSelect(payments);
-            
-            // 3. Update charts
-            updateCharts();
+        function getFilteredDashboardPayments() {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const currentYear = today.getFullYear();
+            const currentMonth = today.getMonth();
+
+            switch (dashboardDateFilter) {
+                case 'month':
+                    return paymentsCache.filter(p => {
+                        const pDate = new Date(p.date + 'T00:00:00'); // Ensure local date
+                        return pDate.getFullYear() === currentYear && pDate.getMonth() === currentMonth;
+                    });
+                case 'year':
+                    return paymentsCache.filter(p => {
+                        const pDate = new Date(p.date + 'T00:00:00');
+                        return pDate.getFullYear() === currentYear;
+                    });
+                case 'all':
+                default:
+                    return paymentsCache;
+            }
         }
 
         /**
-         * Triggers re-render of both charts.
+         * Updates all dashboard elements based on the current filter.
          */
-         function updateCharts() {
-            renderPersonsChart();
+        function updateDashboard() {
+            // Get the filtered list of payments for the dashboard
+            const filteredPayments = getFilteredDashboardPayments();
+
+            // 1. Update total spending
+            const totalSpending = filteredPayments.reduce((sum, p) => sum + p.amount, 0);
+            totalSpendingEl.textContent = formatCurrency(totalSpending);
+            
+            // 2. Update charts
+            renderPersonsChart(filteredPayments); // Pass filtered data
+            renderCategoriesChart(filteredPayments); // Pass filtered data
+            
+            // 3. Populate year select (uses ALL payments)
+            populateYearSelect(paymentsCache);
+            
+            // 4. Render monthly chart (uses its own year filter, not dashboard filter)
             renderMonthlyChart();
-         }
+        }
         
         /**
-         * Calculates and renders the "Spending by Person" chart.
+         * Calculates and renders the "Spending by Person" chart based on filtered payments.
+         * @param {Array} payments - The filtered array of payment objects to display.
          */
-        function renderPersonsChart() {
+        function renderPersonsChart(payments) {
             const ctx = document.getElementById('persons-chart').getContext('2d');
             
-            // Aggregate spending by person
-            const spending = paymentsCache.reduce((acc, payment) => {
+            const spending = payments.reduce((acc, payment) => {
                 acc[payment.name] = (acc[payment.name] || 0) + payment.amount;
                 return acc;
             }, {});
@@ -895,8 +1121,7 @@
             const labels = Object.keys(spending);
             const data = Object.values(spending);
             
-            // --- NEW: Generate dynamic colors ---
-            const backgroundColors = labels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length] + 'B3'); // with 70% opacity
+            const backgroundColors = labels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length] + 'B3');
             const borderColors = labels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]);
 
             if (personsChartInstance) {
@@ -904,8 +1129,7 @@
             }
             
             if (labels.length === 0) {
-                // Don't render an empty chart
-                return;
+                return; // Don't render an empty chart
             }
 
             personsChartInstance = new Chart(ctx, {
@@ -915,8 +1139,58 @@
                     datasets: [{
                         label: 'Total Spending',
                         data: data,
-                        backgroundColor: backgroundColors, // Use dynamic colors
-                        borderColor: borderColors,     // Use dynamic colors
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` ${formatCurrency(c.raw)}` } } },
+                    scales: { y: { beginAtZero: true, ticks: { callback: (v) => formatCurrency(v) } }, x: {} }
+                }
+            });
+        }
+
+        /**
+         * Renders the "Spending by Category" pie chart.
+         * @param {Array} payments - The filtered array of payment objects to display.
+         */
+        function renderCategoriesChart(payments) {
+            const ctx = document.getElementById('categories-chart').getContext('2d');
+            
+            const spending = payments.reduce((acc, payment) => {
+                const category = payment.category || 'Uncategorized';
+                acc[category] = (acc[category] || 0) + payment.amount;
+                return acc;
+            }, {});
+
+            const labels = Object.keys(spending);
+            const data = Object.values(spending);
+            
+            const backgroundColors = labels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length] + 'B3');
+            const borderColors = labels.map((_, i) => CHART_COLORS[i % CHART_COLORS.length]);
+
+            if (categoriesChartInstance) {
+                categoriesChartInstance.destroy();
+            }
+            
+            if (labels.length === 0) {
+                noCategoryDataMsg.classList.remove('hidden');
+                return;
+            }
+            noCategoryDataMsg.classList.add('hidden');
+
+            categoriesChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Total Spending',
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
                         borderWidth: 1
                     }]
                 },
@@ -924,27 +1198,15 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false // Hide legend since colors are self-explanatory
+                        legend: { 
+                            display: true,
+                            position: 'right',
                         },
                         tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return ` ${formatCurrency(context.raw)}`;
-                                }
+                            callbacks: { 
+                                label: (c) => ` ${c.label}: ${formatCurrency(c.raw)}`
                             }
                         }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return formatCurrency(value);
-                                }
-                            }
-                        },
-                        x: {}
                     }
                 }
             });
@@ -952,25 +1214,21 @@
         
         /**
          * Populates the year dropdown for the monthly chart.
-         * @param {Array} payments - Array of payment objects.
+         * @param {Array} payments - Array of payment objects (uses ALL payments).
          */
         function populateYearSelect(payments) {
+            // ... (same as before)
             if (payments.length === 0) return;
-            
-            const years = [...new Set(payments.map(p => new Date(p.date).getFullYear()))];
-            years.sort((a, b) => b - a); // Newest first
-            
+            const years = [...new Set(payments.map(p => new Date(p.date + 'T00:00:00').getFullYear()))];
+            years.sort((a, b) => b - a);
             const currentVal = monthlyReportYearSelect.value;
-            monthlyReportYearSelect.innerHTML = ''; // Clear
-            
+            monthlyReportYearSelect.innerHTML = '';
             years.forEach(year => {
                 const option = document.createElement('option');
                 option.value = year;
                 option.textContent = year;
                 monthlyReportYearSelect.appendChild(option);
             });
-            
-            // Restore selection or default to newest
             if (years.includes(parseInt(currentVal))) {
                 monthlyReportYearSelect.value = currentVal;
             } else {
@@ -982,24 +1240,20 @@
          * Calculates and renders the "Monthly Report" line chart.
          */
         function renderMonthlyChart() {
+            // ... (same as before, but ensure local date parsing)
             const ctx = document.getElementById('monthly-chart').getContext('2d');
             const selectedYear = parseInt(monthlyReportYearSelect.value);
 
             if (isNaN(selectedYear)) {
-                // No data or year not selected yet
                 if (monthlyChartInstance) monthlyChartInstance.destroy();
                 return;
             }
             
-            // Initialize 12 months with 0
             const monthlyTotals = new Array(12).fill(0);
+            const paymentsForYear = paymentsCache.filter(p => new Date(p.date + 'T00:00:00').getFullYear() === selectedYear);
             
-            // Filter payments for the selected year
-            const paymentsForYear = paymentsCache.filter(p => new Date(p.date).getFullYear() === selectedYear);
-            
-            // Aggregate spending by month
             paymentsForYear.forEach(payment => {
-                const month = new Date(payment.date).getMonth(); // 0 = Jan, 11 = Dec
+                const month = new Date(payment.date + 'T00:00:00').getMonth();
                 monthlyTotals[month] += payment.amount;
             });
             
@@ -1018,40 +1272,105 @@
                         label: `Spending in ${selectedYear}`,
                         data: data,
                         fill: true,
-                        backgroundColor: 'rgba(59, 130, 246, 0.2)', // blue-500 with opacity
-                        borderColor: 'rgba(59, 130, 246, 1)',     // blue-500
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
                         tension: 0.1
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                           display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return ` ${formatCurrency(context.raw)}`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return formatCurrency(value);
-                                }
-                            }
-                        }
-                    }
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => ` ${formatCurrency(c.raw)}` } } },
+                    scales: { y: { beginAtZero: true, ticks: { callback: (v) => formatCurrency(v) } } }
                 }
             });
         }
         
+        /**
+         * Handles clicks on the dashboard filter buttons.
+         * @param {Event} e - The click event.
+         */
+        function handleDashboardFilterClick(e) {
+            const clickedFilter = e.currentTarget;
+            dashboardDateFilter = clickedFilter.dataset.filter;
+
+            // Update button styles
+            dashboardFilterButtons.forEach(btn => btn.classList.remove('active'));
+            clickedFilter.classList.add('active');
+
+            // Re-render dashboard
+            updateDashboard();
+        }
+
+        // --- Export to CSV ---
+
+        /**
+         * Creates and downloads a CSV file.
+         * @param {string} filterType - 'week', 'month', or 'all'.
+         */
+        function handleExportCSV(filterType) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            let filteredData = [];
+            let filename = 'payments_export.csv';
+
+            switch (filterType) {
+                case 'week':
+                    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday
+                    const startOfWeek = new Date(today.setDate(today.getDate() - dayOfWeek));
+                    const endOfWeek = new Date(startOfWeek);
+                    endOfWeek.setDate(endOfWeek.getDate() + 6);
+                    
+                    filteredData = paymentsCache.filter(p => {
+                        const pDate = new Date(p.date + 'T00:00:00');
+                        return pDate >= startOfWeek && pDate <= endOfWeek;
+                    });
+                    filename = `payments_week_${startOfWeek.toISOString().split('T')[0]}.csv`;
+                    break;
+
+                case 'month':
+                    const currentYear = today.getFullYear();
+                    const currentMonth = today.getMonth();
+                    filteredData = paymentsCache.filter(p => {
+                        const pDate = new Date(p.date + 'T00:00:00');
+                        return pDate.getFullYear() === currentYear && pDate.getMonth() === currentMonth;
+                    });
+                    filename = `payments_month_${currentYear}-${String(currentMonth + 1).padStart(2, '0')}.csv`;
+                    break;
+                
+                case 'all':
+                default:
+                    filteredData = paymentsCache;
+                    filename = 'payments_all.csv';
+                    break;
+            }
+
+            if (filteredData.length === 0) {
+                showToast("No data to export for this period.", true);
+                return;
+            }
+
+            // Generate CSV content
+            const header = `"Date","Name","Category","Amount"\n`;
+            const rows = filteredData.map(p => 
+                `"${p.date}","${p.name}","${p.category || 'N/A'}","${p.amount}"`
+            ).join('\n');
+            const csvContent = header + rows;
+
+            // Create and trigger download
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-g;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Export successful!");
+        }
+
         // --- Event Listeners ---
         
         window.onload = initializeFirebase;
@@ -1064,12 +1383,22 @@
         // --- Tab Listeners ---
         tabButtons.forEach(btn => btn.addEventListener('click', handleTabClick));
 
+        // --- Dashboard Filter Listeners ---
+        dashboardFilterButtons.forEach(btn => btn.addEventListener('click', handleDashboardFilterClick));
+
         // --- Form Listeners ---
         personForm.addEventListener('submit', handleSubmitPerson);
         cancelPersonEditBtn.addEventListener('click', resetPersonForm);
+        categoryForm.addEventListener('submit', handleSubmitCategory);
+        cancelCategoryEditBtn.addEventListener('click', resetCategoryForm);
         paymentForm.addEventListener('submit', handleSubmitPayment);
         cancelEditBtn.addEventListener('click', resetPaymentForm);
         monthlyReportYearSelect.addEventListener('change', renderMonthlyChart);
+
+        // --- Export Listeners ---
+        exportWeekBtn.addEventListener('click', () => handleExportCSV('week'));
+        exportMonthBtn.addEventListener('click', () => handleExportCSV('month'));
+        exportAllBtn.addEventListener('click', () => handleExportCSV('all'));
 
         // --- Dynamic Table/List Listeners (Event Delegation) ---
         
@@ -1080,14 +1409,30 @@
                 const id = deleteBtn.dataset.id;
                 const name = deleteBtn.dataset.name;
                 handleDeletePerson(id, name);
-                return; // Prevent edit from firing
+                return;
             }
-            
             const editBtn = e.target.closest('.edit-person-btn');
             if (editBtn) {
                 const id = editBtn.dataset.id;
-                const name = editBtn.dataset.name; // Fixed: removed extra dot from 'dataset..name'
+                const name = editBtn.dataset.name;
                 handleEditPerson(id, name);
+            }
+        });
+
+        // Listener for "Categories" list
+        categoryList.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.delete-category-btn');
+            if (deleteBtn) {
+                const id = deleteBtn.dataset.id;
+                const name = deleteBtn.dataset.name;
+                handleDeleteCategory(id, name);
+                return;
+            }
+            const editBtn = e.target.closest('.edit-category-btn');
+            if (editBtn) {
+                const id = editBtn.dataset.id;
+                const name = editBtn.dataset.name;
+                handleEditCategory(id, name);
             }
         });
         
@@ -1099,7 +1444,6 @@
                 handleDeletePayment(id);
                 return;
             }
-
             const editBtn = e.target.closest('.edit-payment-btn');
             if (editBtn) {
                 const id = editBtn.dataset.id;
