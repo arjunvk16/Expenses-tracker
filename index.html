@@ -232,7 +232,14 @@
         
         // The appId is now irrelevant as we are not using the environment's project.
         // Using a default value.
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'my-chain-reaction-game';
+        // const appId = typeof __app_id !== 'undefined' ? __app_id : 'my-chain-reaction-game';
+        
+        // --- CRITICAL FIX ---
+        // We MUST hard-code the appId to match the hard-coded firebaseConfig.
+        // This ensures the database paths (e.g., /artifacts/my-chain-reaction-game/...)
+        // are correct for the project we are connected to.
+        const appId = 'my-chain-reaction-game';
+        // --- END FIX ---
         
         // The initialAuthToken is also irrelevant as it's for the environment's project.
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
