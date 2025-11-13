@@ -60,7 +60,7 @@
 
         <!-- Header -->
         <header class="flex justify-between items-center mb-6 pb-4 border-b border-gray-700">
-            <h1 class="text-3xl font-bold text-blue-400">Payment Manager Pro</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold text-blue-400">Payment Manager Pro</h1>
             <div id="auth-container" class="flex items-center space-x-2">
                 <span id="user-email" class="text-gray-400 text-sm hidden"></span>
                 <button id="logout-btn" class="hidden bg-red-600 text-white px-3 py-1 rounded-lg text-sm shadow-md hover:bg-red-700 transition duration-150">Logout</button>
@@ -69,11 +69,11 @@
 
         <!-- Auth Section -->
         <section id="auth-section" class="max-w-md mx-auto bg-gray-800 p-8 rounded-lg shadow-lg">
-            <h2 class="text-2xl font-semibold text-center text-gray-100 mb-6">Welcome</h2>
+            <h2 class="text-xl sm:text-2xl font-semibold text-center text-gray-100 mb-6">Welcome</h2>
             <div class="space-y-4">
                 <input type="email" id="email-input" placeholder="Email" class="w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400">
                 <input type="password" id="password-input" placeholder="Password (min. 6 characters)" class="w-full px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white placeholder-gray-400">
-                <div class="flex space-x-4">
+                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
                     <button id="login-btn" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition duration-150">Login</button>
                     <button id="signup-btn" class="flex-1 bg-gray-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-gray-700 transition duration-150">Sign Up</button>
                 </div>
@@ -87,11 +87,11 @@
         <main id="app-section" class="hidden">
             <!-- Tab Navigation -->
             <nav class="mb-6 bg-gray-800 rounded-lg shadow-sm">
-                <div class="flex border-b border-gray-700">
-                    <button data-tab="dashboard" class="tab-btn active px-6 py-3 text-gray-400 hover:text-blue-400">Dashboard</button>
-                    <button data-tab="payments" class="tab-btn px-6 py-3 text-gray-400 hover:text-blue-400">Payments</button>
-                    <button data-tab="people" class="tab-btn px-6 py-3 text-gray-400 hover:text-blue-400">Manage People</button>
-                    <button data-tab="categories" class="tab-btn px-6 py-3 text-gray-400 hover:text-blue-400">Manage Categories</button>
+                <div class="flex border-b border-gray-700 overflow-x-auto whitespace-nowrap">
+                    <button data-tab="dashboard" class="tab-btn active px-4 sm:px-6 py-3 text-sm sm:text-base text-gray-400 hover:text-blue-400">Dashboard</button>
+                    <button data-tab="payments" class="tab-btn px-4 sm:px-6 py-3 text-sm sm:text-base text-gray-400 hover:text-blue-400">Payments</button>
+                    <button data-tab="people" class="tab-btn px-4 sm:px-6 py-3 text-sm sm:text-base text-gray-400 hover:text-blue-400">Manage People</button>
+                    <button data-tab="categories" class="tab-btn px-4 sm:px-6 py-3 text-sm sm:text-base text-gray-400 hover:text-blue-400">Manage Categories</button>
                 </div>
             </nav>
 
@@ -100,7 +100,7 @@
                 <!-- Dashboard Tab -->
                 <section id="dashboard-tab" class="tab-content space-y-6">
                     <!-- Dashboard Filters -->
-                    <div class="flex justify-center space-x-2 bg-gray-800 p-2 rounded-lg">
+                    <div class="flex flex-wrap justify-start sm:justify-center gap-2 bg-gray-800 p-2 rounded-lg">
                         <button data-filter="month" class="filter-btn px-4 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700">This Month</button>
                         <button data-filter="year" class="filter-btn px-4 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700">This Year</button>
                         <button data-filter="all" class="filter-btn active px-4 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-700">All Time</button>
@@ -111,6 +111,10 @@
                         <div class="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-1">
                             <h3 class="text-xl font-semibold mb-4 text-gray-100">Total Spending</h3>
                             <p class="text-4xl font-bold text-blue-400" id="total-spending">...</p>
+                            <!-- UPDATED: SECTION FOR TOP 5 SPENDERS -->
+                            <div id="top-spenders" class="mt-4 pt-4 border-t border-gray-700 space-y-2">
+                                <!-- Content will be injected by JS -->
+                            </div>
                         </div>
                         
                         <!-- Spending by Person -->
@@ -132,12 +136,30 @@
 
                         <!-- Monthly Report -->
                         <div class="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-3">
-                            <h3 class="text-xl font-semibold mb-4 text-gray-100">Monthly Report</h3>
+                            <h3 class="text-xl font-semibold mb-4 text-gray-100">Total Monthly Report</h3>
                             <select id="monthly-report-year" class="mb-4 w-full md:w-auto px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
                                 <!-- Years will be populated by JS -->
                             </select>
                             <div class="relative h-96">
                                 <canvas id="monthly-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- UPDATED: User Payment Report -->
+                        <div class="bg-gray-800 p-6 rounded-lg shadow-lg lg:col-span-3">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-100">User Payment Report</h3>
+                            <div class="flex flex-col md:flex-row gap-4 mb-4">
+                                <select id="user-report-person-select" class="flex-1 px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                                    <option value="">-- Select a Person --</option>
+                                    <!-- People populated by JS -->
+                                </select>
+                                <select id="user-report-period-select" class="flex-1 md:w-auto px-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-700 text-white">
+                                    <!-- Periods populated by JS -->
+                                </select>
+                            </div>
+                            <div class="relative h-96">
+                                <canvas id="user-monthly-chart"></canvas>
+                                <p id="user-report-no-data-msg" class="text-center text-gray-400 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 hidden">No data for this user in the selected year.</p>
                             </div>
                         </div>
                     </div>
@@ -354,15 +376,16 @@
         let unsubscribePayments = null;
         let unsubscribePeople = null;
         let unsubscribeCategories = null;
-        let unsubscribeTemplates = null; // New
+        let unsubscribeTemplates = null;
         let paymentsCache = [];
         let peopleCache = [];
         let categoriesCache = [];
-        let templatesCache = []; // New
-        let filteredPaymentsCache = []; // New
+        let templatesCache = [];
+        let filteredPaymentsCache = [];
         let personsChartInstance = null;
         let monthlyChartInstance = null;
         let categoriesChartInstance = null;
+        let userMonthlyChartInstance = null;
         let dashboardDateFilter = 'all';
         
         // --- CRITICAL FIX ---
@@ -390,20 +413,20 @@
         const paymentForm = document.getElementById('payment-form');
         const formTitle = document.getElementById('form-title');
         const paymentDate = document.getElementById('payment-date');
-        const paymentNameInput = document.getElementById('payment-name-input'); // Changed
-        const paymentNameDatalist = document.getElementById('payment-name-list'); // Changed
-        const paymentCategoryInput = document.getElementById('payment-category-input'); // Changed
-        const paymentCategoryDatalist = document.getElementById('payment-category-list'); // Changed
+        const paymentNameInput = document.getElementById('payment-name-input');
+        const paymentNameDatalist = document.getElementById('payment-name-list');
+        const paymentCategoryInput = document.getElementById('payment-category-input');
+        const paymentCategoryDatalist = document.getElementById('payment-category-list');
         const paymentAmount = document.getElementById('payment-amount');
-        const paymentNotes = document.getElementById('payment-notes'); // NEW
+        const paymentNotes = document.getElementById('payment-notes');
         const submitPaymentBtn = document.getElementById('submit-payment-btn');
         const cancelEditBtn = document.getElementById('cancel-edit-btn');
         const paymentIdHidden = document.getElementById('payment-id-hidden');
         const paymentsTableBody = document.getElementById('payments-table-body');
         const noPaymentsMsg = document.getElementById('no-payments-msg');
-        const noFilteredPaymentsMsg = document.getElementById('no-filtered-payments-msg'); // New
+        const noFilteredPaymentsMsg = document.getElementById('no-filtered-payments-msg');
 
-        // Payment Templates (New)
+        // Payment Templates
         const saveTemplateCheckbox = document.getElementById('save-template-checkbox');
         const templateNameWrapper = document.getElementById('template-name-wrapper');
         const templateNameInput = document.getElementById('template-name-input');
@@ -412,7 +435,7 @@
         const templateList = document.getElementById('template-list');
         const noTemplatesListMsg = document.getElementById('no-templates-list-msg');
         
-        // Payment Filters (New)
+        // Payment Filters
         const filterName = document.getElementById('filter-name');
         const filterCategory = document.getElementById('filter-category');
         const filterStartDate = document.getElementById('filter-start-date');
@@ -444,11 +467,17 @@
         // Dashboard
         const dashboardFilterButtons = document.querySelectorAll('.filter-btn');
         const totalSpendingEl = document.getElementById('total-spending');
+        const topSpendersDiv = document.getElementById('top-spenders'); // NEW
         const monthlyReportYearSelect = document.getElementById('monthly-report-year');
         const noCategoryDataMsg = document.getElementById('no-category-data-msg');
 
+        // User Report
+        const userReportPersonSelect = document.getElementById('user-report-person-select');
+        const userReportPeriodSelect = document.getElementById('user-report-period-select');
+        const userReportNoDataMsg = document.getElementById('user-report-no-data-msg');
+
         // Export
-        const exportFilteredBtn = document.getElementById('export-filtered-btn'); // Changed
+        const exportFilteredBtn = document.getElementById('export-filtered-btn');
         
         // --- Chart Config ---
         const CHART_COLORS = [
@@ -462,7 +491,6 @@
          * Utility: Show toast message
          */
         function showToast(message, isError = false) {
-            // ... (same as before)
             const toast = document.getElementById('toast');
             toast.textContent = message;
             toast.classList.remove('hidden');
@@ -482,11 +510,19 @@
          * Utility: Format number as INR currency
          */
         function formatCurrency(amount) {
-            // ... (same as before)
             return new Intl.NumberFormat('en-IN', {
                 style: 'currency',
                 currency: 'INR',
             }).format(amount);
+        }
+
+        /**
+         * Utility: Format "YYYY-MM" to "Mon YYYY"
+         */
+        function formatDateToMonYYYY(yyyy_mm) {
+            const [year, month] = yyyy_mm.split('-');
+            const date = new Date(year, month - 1); // month is 0-indexed
+            return date.toLocaleString('default', { month: 'short', year: 'numeric' });
         }
 
         // --- Firebase Initialization & Auth ---
@@ -495,7 +531,6 @@
          * Initializes the Firebase app and auth.
          */
         function initializeFirebase() {
-            // ... (same as before)
             try {
                 app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
@@ -543,13 +578,13 @@
                     if (unsubscribePayments) unsubscribePayments();
                     if (unsubscribePeople) unsubscribePeople();
                     if (unsubscribeCategories) unsubscribeCategories();
-                    if (unsubscribeTemplates) unsubscribeTemplates(); // New
+                    if (unsubscribeTemplates) unsubscribeTemplates();
                     
                     paymentsCache = [];
                     peopleCache = [];
                     categoriesCache = [];
-                    templatesCache = []; // New
-                    filteredPaymentsCache = []; // New
+                    templatesCache = [];
+                    filteredPaymentsCache = [];
                 }
                 authLoading.classList.add('hidden');
             });
@@ -559,7 +594,6 @@
          * Handles user login.
          */
         async function handleLogin() {
-            // ... (same as before)
             const email = emailInput.value;
             const password = passwordInput.value;
             if (!email || !password) {
@@ -580,7 +614,6 @@
          * Handles user signup.
          */
         async function handleSignup() {
-            // ... (same as before)
             const email = emailInput.value;
             const password = passwordInput.value;
             if (!email || !password) {
@@ -605,7 +638,6 @@
          * Handles user logout.
          */
         async function handleLogout() {
-            // ... (same as before)
             try {
                 await signOut(auth);
             } catch (error) {
@@ -620,7 +652,6 @@
          * Handles tab switching.
          */
         function handleTabClick(e) {
-            // ... (same as before)
             const clickedTab = e.currentTarget;
             const tabName = clickedTab.dataset.tab;
 
@@ -651,7 +682,7 @@
             if (unsubscribePayments) unsubscribePayments();
             if (unsubscribePeople) unsubscribePeople();
             if (unsubscribeCategories) unsubscribeCategories();
-            if (unsubscribeTemplates) unsubscribeTemplates(); // New
+            if (unsubscribeTemplates) unsubscribeTemplates();
 
             // --- People Listener ---
             const peoplePath = `/artifacts/${appId}/users/${userId}/persons`;
@@ -663,8 +694,9 @@
                 peopleCache.sort((a, b) => a.name.localeCompare(b.name));
                 
                 renderPeopleList(peopleCache);
-                updatePaymentNameDatalist(peopleCache); // Changed
-                populatePaymentFilterSelects(); // New
+                updatePaymentNameDatalist(peopleCache);
+                populatePaymentFilterSelects();
+                populateUserReportPersonSelect(peopleCache);
                 
             }, (error) => console.error("Error in people listener:", error));
 
@@ -678,8 +710,8 @@
                 categoriesCache.sort((a, b) => a.name.localeCompare(b.name));
                 
                 renderCategoriesList(categoriesCache);
-                updatePaymentCategoryDatalist(categoriesCache); // Changed
-                populatePaymentFilterSelects(); // New
+                updatePaymentCategoryDatalist(categoriesCache);
+                populatePaymentFilterSelects();
                 
             }, (error) => console.error("Error in categories listener:", error));
 
@@ -706,14 +738,13 @@
                 paymentsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 paymentsCache.sort((a, b) => new Date(b.date) - new Date(a.date));
                 
-                applyAndRenderPaymentFilters(); // Changed: Now uses filter function
+                applyAndRenderPaymentFilters();
                 updateDashboard();
                 
             }, (error) => console.error("Error in payments listener:", error));
         }
 
         // --- People Management ---
-        // ... (All functions: renderPeopleList, handleSubmitPerson, handleEditPerson, resetPersonForm, handleDeletePerson are IDENTICAL to before) ...
         function renderPeopleList(people) {
             peopleList.innerHTML = '';
             
@@ -848,7 +879,6 @@
         }
 
         // --- Category Management ---
-        // ... (All functions: renderCategoriesList, handleSubmitCategory, handleEditCategory, resetCategoryForm, handleDeleteCategory are IDENTICAL to before) ...
         function renderCategoriesList(categories) {
             categoryList.innerHTML = '';
             
@@ -887,8 +917,8 @@
             if (categoryId) {
                 // Edit Mode
                 if (existingCategory && existingCategory.id !== categoryId) {
-                     showToast("This category name is already used.", true);
-                     return;
+                    showToast("This category name is already used.", true);
+                    return;
                 }
                 
                 try {
@@ -1078,7 +1108,7 @@
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                             </button>
                             <button data-id="${payment.id}" class="delete-payment-btn text-red-500 hover:text-red-700">
-                                <svg class..."></svg>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
                         </td>
                     `;
@@ -1193,9 +1223,8 @@
 
         /**
          * Handles deleting a payment.
-        */
+         */
         async function handleDeletePayment(paymentId) {
-            // ... (same as before)
             try {
                 const paymentPath = `/artifacts/${appId}/users/${userId}/payments/${paymentId}`;
                 await deleteDoc(doc(db, paymentPath));
@@ -1221,7 +1250,7 @@
                 name: paymentData.name,
                 category: paymentData.category,
                 amount: paymentData.amount,
-                notes: paymentData.notes // NEW
+                notes: paymentData.notes
             };
             
             try {
@@ -1282,7 +1311,7 @@
                     <div>
                         <span class="text-gray-100 font-semibold">${template.templateName}</span>
                         <p class="text-sm text-gray-400">${template.name} | ${template.category} | ${formatCurrency(template.amount)}</p>
-                        <p class="text-sm text-gray-300 italic">${template.notes || 'No notes'}</p> <!-- NEW -->
+                        <p class="text-sm text-gray-300 italic">${template.notes || 'No notes'}</p>
                     </div>
                     <button data-id="${template.id}" class="delete-template-btn text-red-500 hover:text-red-700">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -1302,7 +1331,7 @@
             paymentNameInput.value = template.name;
             paymentCategoryInput.value = template.category;
             paymentAmount.value = template.amount;
-            paymentNotes.value = template.notes || ''; // NEW
+            paymentNotes.value = template.notes || '';
             
             // Scroll to form and show toast
             paymentForm.scrollIntoView({ behavior: 'smooth' });
@@ -1324,7 +1353,6 @@
         }
         
         // --- Dashboard & Charts ---
-        // ... (All functions: getFilteredDashboardPayments, updateDashboard, renderPersonsChart, renderCategoriesChart, populateYearSelect, renderMonthlyChart, handleDashboardFilterClick are IDENTICAL to before) ...
         function getFilteredDashboardPayments() {
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -1355,15 +1383,45 @@
             const totalSpending = filteredPayments.reduce((sum, p) => sum + p.amount, 0);
             totalSpendingEl.textContent = formatCurrency(totalSpending);
             
+            // UPDATED: Calculate and render top 5 spenders
+            const spendingByPerson = filteredPayments.reduce((acc, payment) => {
+                acc[payment.name] = (acc[payment.name] || 0) + payment.amount;
+                return acc;
+            }, {});
+
+            const sortedSpenders = Object.entries(spendingByPerson)
+                .sort(([, amountA], [, amountB]) => amountB - amountA);
+
+            topSpendersDiv.innerHTML = ''; // Clear previous
+            if (sortedSpenders.length === 0) {
+                topSpendersDiv.innerHTML = '<p class="text-sm text-gray-400">No spending data for this period.</p>';
+            } else {
+                const ranks = ['1st:', '2nd:', '3rd:', '4th:', '5th:']; // UPDATED to 5
+                sortedSpenders.slice(0, 5).forEach(([name, amount], index) => { // UPDATED to 5
+                    const p = document.createElement('p');
+                    p.className = 'text-sm text-gray-300 flex justify-between';
+                    p.innerHTML = `
+                        <span class="font-medium text-gray-100">${ranks[index]} ${name}</span>
+                        <span class="text-blue-300">${formatCurrency(amount)}</span>
+                    `;
+                    topSpendersDiv.appendChild(p);
+                });
+            }
+
             // 2. Update charts
             renderPersonsChart(filteredPayments); // Pass filtered data
             renderCategoriesChart(filteredPayments); // Pass filtered data
             
             // 3. Populate year select (uses ALL payments)
-            populateYearSelect(paymentsCache);
+            populateYearSelect(paymentsCache, monthlyReportYearSelect);
             
             // 4. Render monthly chart (uses its own year filter, not dashboard filter)
             renderMonthlyChart();
+
+            // 5. Populate User Report Selects
+            populateUserReportPersonSelect(peopleCache);
+            populateUserReportPeriodSelect(paymentsCache);
+            renderUserReportChart();
         }
         function renderPersonsChart(payments) {
             const ctx = document.getElementById('persons-chart').getContext('2d');
@@ -1461,27 +1519,32 @@
                 }
             });
         }
-        function populateYearSelect(payments) {
-            // ... (same as before)
+        
+        /**
+         * Populates a given year select dropdown.
+         * @param {Array} payments - The full payments cache.
+         * @param {HTMLElement} selectElement - The <select> element to populate.
+         */
+        function populateYearSelect(payments, selectElement) {
             if (payments.length === 0) return;
             const years = [...new Set(payments.map(p => new Date(p.date + 'T00:00:00').getFullYear()))];
             years.sort((a, b) => b - a);
-            const currentVal = monthlyReportYearSelect.value;
-            monthlyReportYearSelect.innerHTML = '';
+            const currentVal = selectElement.value;
+            selectElement.innerHTML = '';
             years.forEach(year => {
                 const option = document.createElement('option');
                 option.value = year;
                 option.textContent = year;
-                monthlyReportYearSelect.appendChild(option);
+                selectElement.appendChild(option);
             });
             if (years.includes(parseInt(currentVal))) {
-                monthlyReportYearSelect.value = currentVal;
+                selectElement.value = currentVal;
             } else {
-                monthlyReportYearSelect.value = years[0];
+                selectElement.value = years[0];
             }
         }
+        
         function renderMonthlyChart() {
-            // ... (same as before, but ensure local date parsing)
             const ctx = document.getElementById('monthly-chart').getContext('2d');
             const selectedYear = parseInt(monthlyReportYearSelect.value);
 
@@ -1538,6 +1601,247 @@
             updateDashboard();
         }
 
+        // --- UPDATED: User Payment Report Functions ---
+        
+        /**
+         * Populates the User Report person <select> dropdown.
+         */
+        function populateUserReportPersonSelect(people) {
+            const currentVal = userReportPersonSelect.value;
+            userReportPersonSelect.innerHTML = '<option value="">-- Select a Person --</option>';
+            people.forEach(person => {
+                const option = document.createElement('option');
+                option.value = person.name;
+                option.textContent = person.name;
+                userReportPersonSelect.appendChild(option);
+            });
+            // Preserve selection if possible
+            if (people.some(p => p.name === currentVal)) {
+                userReportPersonSelect.value = currentVal;
+            }
+        }
+        
+        /**
+         * Populates the User Report period <select> dropdown.
+         */
+        function populateUserReportPeriodSelect(payments) {
+            const currentVal = userReportPeriodSelect.value;
+            userReportPeriodSelect.innerHTML = ''; // Clear
+
+            if (payments.length === 0) {
+                 userReportPeriodSelect.innerHTML = `<option value="total">Total</option><option value="${new Date().getFullYear()}">${new Date().getFullYear()} (Year)</option>`;
+                return;
+            }
+
+            const periods = new Set();
+            const years = new Set();
+            payments.forEach(p => {
+                const date = new Date(p.date + 'T00:00:00');
+                const year = date.getFullYear();
+                const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                years.add(year.toString());
+                periods.add(`${year}-${month}`);
+            });
+
+            const sortedPeriods = [...periods].sort().reverse();
+            const sortedYears = [...years].sort().reverse();
+
+            // Add Total
+            const totalOpt = document.createElement('option');
+            totalOpt.value = "total";
+            totalOpt.textContent = "Total (All Time)";
+            userReportPeriodSelect.appendChild(totalOpt);
+
+            // Add Years
+            sortedYears.forEach(year => {
+                const opt = document.createElement('option');
+                opt.value = year;
+                opt.textContent = `${year} (Year)`;
+                userReportPeriodSelect.appendChild(opt);
+            });
+
+            // Add Months
+            sortedPeriods.forEach(period => {
+                const opt = document.createElement('option');
+                opt.value = period; // "YYYY-MM"
+                opt.textContent = formatDateToMonYYYY(period); // "Mon YYYY"
+                userReportPeriodSelect.appendChild(opt);
+            });
+            
+            // Preserve selection if possible
+            if ([...userReportPeriodSelect.options].some(opt => opt.value === currentVal)) {
+                userReportPeriodSelect.value = currentVal;
+            } else {
+                userReportPeriodSelect.value = "total"; // Default to Total
+            }
+        }
+
+        /**
+         * Renders the chart for a specific user based on the selected period.
+         */
+        function renderUserReportChart() {
+            const ctx = document.getElementById('user-monthly-chart').getContext('2d');
+            const selectedPerson = userReportPersonSelect.value;
+            const selectedPeriod = userReportPeriodSelect.value;
+
+            if (userMonthlyChartInstance) {
+                userMonthlyChartInstance.destroy();
+            }
+
+            if (!selectedPerson) {
+                 userReportNoDataMsg.textContent = "Please select a person.";
+                 userReportNoDataMsg.classList.remove('hidden');
+                 return;
+            }
+            
+            userReportNoDataMsg.classList.add('hidden'); // Hide by default
+            let chartType = 'line'; // Default to line
+            let labels = [];
+            let data = [];
+            let chartLabel = '';
+
+            // --- Case 1: "Total" (All Time) ---
+            if (selectedPeriod === 'total') {
+                const paymentsForUser = paymentsCache.filter(p => p.name === selectedPerson);
+                if (paymentsForUser.length === 0) {
+                    userReportNoDataMsg.textContent = `No data found for ${selectedPerson}.`;
+                    userReportNoDataMsg.classList.remove('hidden');
+                    return;
+                }
+                
+                // Aggregate by month (YYYY-MM)
+                const spendingByMonth = paymentsForUser.reduce((acc, payment) => {
+                    const monthYear = payment.date.substring(0, 7); // "YYYY-MM"
+                    acc[monthYear] = (acc[monthYear] || 0) + payment.amount;
+                    return acc;
+                }, {});
+
+                const sortedMonths = Object.keys(spendingByMonth).sort();
+                
+                if (sortedMonths.length === 0) {
+                    userReportNoDataMsg.textContent = `No data found for ${selectedPerson}.`;
+                    userReportNoDataMsg.classList.remove('hidden');
+                    return;
+                }
+
+                // Fill in missing months to create a continuous line
+                const firstMonth = sortedMonths[0];
+                const lastMonth = sortedMonths[sortedMonths.length - 1];
+                
+                let currentDate = new Date(firstMonth + '-02T00:00:00'); // Use day 2 to avoid timezone issues
+                const lastDate = new Date(lastMonth + '-02T00:00:00');
+                
+                const allMonthsData = {};
+                
+                while (currentDate <= lastDate) {
+                    const year = currentDate.getFullYear();
+                    const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+                    const monthYearKey = `${year}-${month}`;
+                    
+                    allMonthsData[monthYearKey] = spendingByMonth[monthYearKey] || 0;
+                    
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                }
+
+                labels = Object.keys(allMonthsData).map(formatDateToMonYYYY); // "Jan 2024"
+                data = Object.values(allMonthsData);
+                chartLabel = `Total Spending per Month for ${selectedPerson}`;
+
+
+                if (data.length === 0) {
+                    userReportNoDataMsg.textContent = `No data found for ${selectedPerson}.`;
+                    userReportNoDataMsg.classList.remove('hidden');
+                    return;
+                }
+
+            // --- Case 2: "YYYY" (Specific Year) ---
+            } else if (selectedPeriod.length === 4) {
+                const selectedYear = parseInt(selectedPeriod);
+                const monthlyTotals = new Array(12).fill(0);
+                
+                const paymentsForUserYear = paymentsCache.filter(p => 
+                    p.name === selectedPerson && 
+                    new Date(p.date + 'T00:00:00').getFullYear() === selectedYear
+                );
+                
+                let totalForYear = 0;
+                paymentsForUserYear.forEach(payment => {
+                    const month = new Date(payment.date + 'T00:00:00').getMonth();
+                    monthlyTotals[month] += payment.amount;
+                    totalForYear += payment.amount;
+                });
+                
+                if (totalForYear === 0) {
+                    userReportNoDataMsg.textContent = `No data for ${selectedPerson} in ${selectedYear}.`;
+                    userReportNoDataMsg.classList.remove('hidden');
+                    return;
+                }
+                
+                labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                data = monthlyTotals;
+                chartLabel = `Spending for ${selectedPerson} in ${selectedYear}`;
+
+            // --- Case 3: "YYYY-MM" (Specific Month) ---
+            } else if (selectedPeriod.length === 7) {
+                const [year, month] = selectedPeriod.split('-').map(Number); // 1-based month
+                
+                const paymentsForUserMonth = paymentsCache.filter(p => {
+                    const pDate = new Date(p.date + 'T00:00:00');
+                    return p.name === selectedPerson &&
+                           pDate.getFullYear() === year &&
+                           (pDate.getMonth() + 1) === month;
+                });
+
+                if (paymentsForUserMonth.length === 0) {
+                    userReportNoDataMsg.textContent = `No data for ${selectedPerson} in ${formatDateToMonYYYY(selectedPeriod)}.`;
+                    userReportNoDataMsg.classList.remove('hidden');
+                    return;
+                }
+
+                // Get days in month
+                const daysInMonth = new Date(year, month, 0).getDate(); // 1-based month works here
+                const dailyTotals = new Array(daysInMonth).fill(0);
+                labels = Array.from({length: daysInMonth}, (_, i) => (i + 1).toString());
+
+                // Aggregate by day
+                paymentsForUserMonth.forEach(payment => {
+                    const day = new Date(payment.date + 'T00:00:00').getDate(); // 1-based day
+                    dailyTotals[day - 1] += payment.amount; // 0-indexed array
+                });
+                
+                data = dailyTotals;
+                chartLabel = `Daily Spending for ${selectedPerson} in ${formatDateToMonYYYY(selectedPeriod)}`;
+            }
+
+            // --- Render the Chart ---
+            if (data.length > 0) {
+                userMonthlyChartInstance = new Chart(ctx, {
+                    type: 'line', // ALWAYS line chart
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: chartLabel,
+                            data: data,
+                            fill: true,
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)', // CHANGED to blue
+                            borderColor: 'rgba(59, 130, 246, 1)', // CHANGED to blue
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { 
+                            legend: { display: true },
+                            tooltip: { callbacks: { label: (c) => ` ${formatCurrency(c.raw)}` } } 
+                        },
+                        scales: { y: { beginAtZero: true, ticks: { callback: (v) => formatCurrency(v) } } }
+                    }
+                });
+            }
+        }
+
+
         // --- Export to CSV ---
 
         /**
@@ -1550,14 +1854,14 @@
             }
 
             // Generate CSV content from the filtered cache
-            const header = `"Date","Name","Category","Amount","Notes"\n`; // NEW
+            const header = `"Date","Name","Category","Amount","Notes"\n`;
             const rows = filteredPaymentsCache.map(p => 
-                `"${p.date}","${p.name}","${p.category || 'N/A'}","${p.amount}","${p.notes || ''}"` // NEW
+                `"${p.date}","${p.name}","${p.category || 'N/A'}","${p.amount}","${p.notes || ''}"`
             ).join('\n');
             const csvContent = header + rows;
 
             // Create and trigger download
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-g;' });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
             link.setAttribute('href', url);
@@ -1596,6 +1900,10 @@
             templateNameWrapper.classList.toggle('hidden', !saveTemplateCheckbox.checked);
         });
 
+        // --- User Report Listeners ---
+        userReportPersonSelect.addEventListener('change', renderUserReportChart);
+        userReportPeriodSelect.addEventListener('change', renderUserReportChart);
+
         // --- Payment Filter Listeners (New) ---
         filterName.addEventListener('change', applyAndRenderPaymentFilters);
         filterCategory.addEventListener('change', applyAndRenderPaymentFilters);
@@ -1604,7 +1912,7 @@
         filterResetBtn.addEventListener('click', resetPaymentFilters);
 
         // --- Export Listeners ---
-        exportFilteredBtn.addEventListener('click', handleExportFilteredCSV); // Changed
+        exportFilteredBtn.addEventListener('click', handleExportFilteredCSV);
 
         // --- Dynamic Table/List Listeners (Event Delegation) ---
         
